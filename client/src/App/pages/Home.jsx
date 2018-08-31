@@ -7,40 +7,39 @@ class Home extends Component {
   constructor(props){
     super(props);
     this.state = {
-      list: []
+      allPercentageGains: {}
     }
   }
 
   componentDidMount() {
-    this.getList();
+    this.getAllPercentageGains();
   }
 
-  getList = () => {
-    fetch('/api/getList')
+  getAllPercentageGains = () => {
+    fetch('/api/getAllPercentageGains')
     .then(res => res.json())
-    .then(list => this.setState({ list }))
+    .then(allPercentageGains => this.setState({ allPercentageGains }))
   }
 
   render() {
-    const { list } = this.state;
+    const { allPercentageGains } = this.state;
 
     return (
     <div className="App">
-      <h1>Project Home</h1>
-      {list.length ? (
+      <h1>Percentage Gains</h1>
+      {Object.keys(allPercentageGains).length ? (
           <div>
-            {/* Render the list of items */}
-            {list.map((item) => {
+            {Object.keys(allPercentageGains).map((key) => {
               return(
                 <div>
-                  {item}
+                  {key + " => " + allPercentageGains[key] + "%"}
                 </div>
               );
             })}
           </div>
         ) : (
           <div>
-            <h2>No List Items Found</h2>
+            <h2>Fetching Data...</h2>
           </div>
         )
       }

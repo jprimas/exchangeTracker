@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const BinanceHandler = require('./src/binance/BinanceHandler')
 
 const app = express();
 
@@ -7,10 +8,16 @@ const app = express();
 app.use(express.static(path.join(__dirname, 'client/build')));
 
 // An api endpoint that returns a short list of items
-app.get('/api/getList', (req,res) => {
-    var list = ["item1", "item2", "item3"];
-    res.json(list);
-    console.log('Sent list of items');
+app.get('/api/getAllPercentageGains', (req,res) => {
+	let binanceHandler = new BinanceHandler();
+	return binanceHandler.getActiveSymbols()
+	.then( (activeSymbols) => {
+		binanceHandler.getAllPercentageGains(activeSymbols)
+		.then( (result) => {
+			return res.json(result);
+			console.log(result);
+		});
+	});
 });
 
 // Handles any requests that don't match the ones above
