@@ -7,40 +7,40 @@ class Home extends Component {
   constructor(props){
     super(props);
     this.state = {
-      allPercentageGains: {},
-      depositedEthValue: ""
+      percentageGainsOfAllCoins: {},
+      overallPercentageGains: ""
     }
   }
 
   componentDidMount() {
-    this.getAllPercentageGains();
-    this.getDepositedEthValue();
+    this.getPercentageGainsOfAllCoins();
+    this.getOverallPercentageGains();
   }
 
-  getAllPercentageGains = () => {
-    fetch('/api/getAllPercentageGains')
+  getPercentageGainsOfAllCoins = () => {
+    fetch('/api/getPercentageGainsOfAllCoins')
     .then(res => res.json())
-    .then(allPercentageGains => this.setState({ allPercentageGains }))
+    .then(percentageGainsOfAllCoins => this.setState({ percentageGainsOfAllCoins }))
   }
 
-  getDepositedEthValue = () => {
-    fetch('/api/getDepositedEthValue')
+  getOverallPercentageGains = () => {
+    fetch('/api/getOverallPercentageGains')
     .then(res => res.json())
-    .then(depositedEthValue => this.setState({ depositedEthValue }))
+    .then(overallPercentageGains => this.setState({ overallPercentageGains }))
   }
 
   render() {
-    const { allPercentageGains } = this.state;
+    const { percentageGainsOfAllCoins, overallPercentageGains } = this.state;
 
     return (
     <div className="App">
-      <h1>Percentage Gains</h1>
-      {Object.keys(allPercentageGains).length ? (
+      <h1>Coin Gains</h1>
+      {Object.keys(percentageGainsOfAllCoins).length ? (
           <div>
-            {Object.keys(allPercentageGains).map((key) => {
+            {Object.keys(percentageGainsOfAllCoins).map((key) => {
               return(
                 <div>
-                  {key + " => " + allPercentageGains[key] + "%"}
+                  {key + " => " + percentageGainsOfAllCoins[key] + "%"}
                 </div>
               );
             })}
@@ -51,8 +51,25 @@ class Home extends Component {
           </div>
         )
       }
+      <h1>Total Gains</h1>
+      {overallPercentageGains ? (
+            <div>
+              <div>
+                {"In USD => " + overallPercentageGains.percentageUsdGain + "%"}
+              </div>
+              <div>
+                {"In ETH => " + overallPercentageGains.percentageEthGain + "%"}
+              </div>
+            </div>
+          ) : (
+            <div>
+              <h2>Fetching Data...</h2>
+            </div>
+          )
+      }
     </div>
     );
   }
 }
+
 export default Home;

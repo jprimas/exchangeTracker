@@ -7,6 +7,36 @@ class CryptoCompareApi {
 	// TODO: Does this need to be a class?
 	constructor() {}
 
+	static getCurrentPrice(fromSymbol, toSymbol) {
+		return axios.get(BASE_URL + '/data/price', {
+			params: {
+				fsym: fromSymbol,
+				tsyms: toSymbol
+			}
+		})
+		.then(function (response) {
+			if (!response || response.status != 200) {
+				console.log(response.statusText);
+			} else {
+				return response.data
+			}
+		})
+	}
+
+	static getCurrentPriceInUsd(fromSymbol) {
+		return this.getCurrentPrice(fromSymbol, "USD")
+		.then ( (data) => data.USD );
+	}
+
+	static getCurrentPriceInEth(fromSymbol) {
+		return this.getCurrentPrice(fromSymbol, "ETH")
+		.then ( (data) => data.ETH );
+	}
+
+	static getCurrentPriceOfEthInUsd() {
+		return this.getCurrentPriceInUsd("ETH");
+	}
+
 	/**
 	 * Queries for the historical price of a specific coin at a given timestamp
 	 */
@@ -38,7 +68,7 @@ class CryptoCompareApi {
 	}
 
 	static getHistoricalPriceOfEthInUsd(timestamp) {
-		return this.getHistoricalPriceInUsd("ETH", timestamp)
+		return this.getHistoricalPriceInUsd("ETH", timestamp);
 	}
 
 }

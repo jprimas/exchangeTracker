@@ -1,6 +1,7 @@
 const Binance = require('node-binance-api');
 const Promise = require('bluebird');
 const CryptoCompareApi = require('../utils/CryptoCompareApi');
+const CommonUtil = require('../utils/CommonUtil');
 require('dotenv').config();
 
 
@@ -15,27 +16,33 @@ class BinanceHandler {
 		});
 	}
 
-	/**
-	 * Loops through all possible coins on bBnance to create a list
-	 * of coins the user actually owns. 
-	 * ETH coins are currently ignored
-	 */
-	getActiveSymbols() {
+	getAccountBalances() {
 		return new Promise((resolve, reject) => {
 			this.binance.balance((error, balances) => {
 				if (error) {
 					console.log(error);
 					reject(error);
 				} else {
-					let activeSymbols = [];
-					for (const key of Object.keys(balances)) {
-						if (balances[key].available > 0 && key != "ETH") {
-							activeSymbols.push(key);
-						}
-					}
-					resolve(activeSymbols);
+					resolve(balances);
 				}
 			});
+		});
+	}
+
+	/**
+	 * Loops through all possible coins on bBnance to create a list
+	 * of coins the user actually owns. 
+	 * ETH coins are currently ignored
+	 */
+	getActiveSymbols() {
+		return this.getAccountBalances().then( (balances) => {
+			let activeSymbols = [];
+			for (const key of Object.keys(balances)) {
+				if (balances[key].available > 0 && key != "ETH") {
+					activeSymbols.push(key);
+				}
+			}
+			return activeSymbols;
 		});
 	}
 
@@ -43,7 +50,7 @@ class BinanceHandler {
 	 * Given a coin symbol, queries for trade history for that coin
 	 * Currently assumes that all trades were paired with ETH
 	 */
-	getTradeHistory(symbol) {
+	getTradeHistoryOfCoin(symbol) {
 		return new Promise((resolve, reject) => {
 			this.binance.trades(symbol+"ETH", (error, trades, symbol) => {
 				if (error) {
@@ -60,7 +67,7 @@ class BinanceHandler {
 	 * Given a coin symbol, queries for the current price of that coin
 	 * Currently assumes that the coins were bought with ETH 
 	 */
-	getCurrentValue(symbol) {
+	getCurrentValueOfCoin(symbol) {
 		return new Promise((resolve, reject) => {
 			this.binance.prices(symbol+"ETH", (error, ticker) => {
 				if (error) {
@@ -81,12 +88,12 @@ class BinanceHandler {
 	 * Given a coin symbol, calculate the percentage gain/loss
 	 * since the coin was bought. Subtracts the commission fee. 
 	 */
-	getPercentageGain(symbol) {
+	getPercentageGainOfCoin(symbol) {
 		return Promise.join(
-			this.getTradeHistory(symbol),
-			this.getCurrentValue(symbol),
+			this.getTradeHistoryOfCoin(symbol),
+			this.getCurrentValueOfCoin(symbol),
 			(trades, currentValue) => {
-				console.log(trades);
+				//console.log(trades);
 				let promiseArr = [];
 				let commissionArr = [];
 				let paidValue = 0;
@@ -109,7 +116,7 @@ class BinanceHandler {
 						// We don't handle airdrop coins
 						return NaN;
 					}
-					return ((((currentValue * totalQty) / paidValue) - 1) * 100).toFixed(2);
+					return CommonUtil.formatAsPercentage(currentValue * totalQty / paidValue);
 				});	
 			}
 		);
@@ -119,14 +126,14 @@ class BinanceHandler {
 	 * Loops through all active coins and calculates the percentage gain/loss
 	 * since the coin was bought
 	 */
-	getAllPercentageGains(activeSymbols = []) {
+	getPercentageGainsOfAllCoins(activeSymbols = []) {
 		console.log(activeSymbols);
 		if (!activeSymbols || activeSymbols.length <= 0) {
 			return {};
 		}
 		let promiseArr = [];
 		for (var i = 0; i < activeSymbols.length; i++) {
-			promiseArr.push(this.getPercentageGain(activeSymbols[i]));
+			promiseArr.push(this.getPercentageGainOfCoin(activeSymbols[i]));
 		}
 		return Promise.all(promiseArr).then(percentages => {
 			let result = {};
@@ -143,7 +150,7 @@ class BinanceHandler {
 		});
 	}
 
-	getDepositHistory(symbol) {
+	getDepositHistoryOfCoin(symbol) {
 		return new Promise((resolve, reject) => {
 			this.binance.depositHistory((error, response) => {
 				if (error) {
@@ -157,7 +164,7 @@ class BinanceHandler {
 	}
 
 	getEthDepositHistory() {
-		return this.getDepositHistory("ETH");
+		return this.getDepositHistoryOfCoin("ETH");
 	}
 
 	/**
@@ -165,7 +172,7 @@ class BinanceHandler {
 	 * the total ETH deposited and the total value in USD when the ETH
 	 * was deposited
 	 */
-	getEthAmountDeposited() {
+	getAmountOfEthDeposited() {
 		return this.getEthDepositHistory().then((depositHistory) => {
 			if (!depositHistory && !depositHistory.success && depositHistory.depositList.length <= 0) {
 				return 0;
@@ -187,11 +194,60 @@ class BinanceHandler {
 					totalEthDepositedInUsd += historicalValues[i] * depositedAmountArr[i];
 				}
 				return {
-					"totalEthDeposited": totalEthDeposited,
-					"totalEthDepositedInUsd" : totalEthDepositedInUsd
+					"totalDepositedValueInEth": totalEthDeposited,
+					"totalDepositedValueInUsd" : totalEthDepositedInUsd
 				};
 			});	
 		});
+	}
+
+	/**
+	 * Calculates the total amount of ETH and its current value in USD of all coins
+	 * in the account
+	 */
+	getCurrentTotalAccountValue() {
+		return this.getAccountBalances().then( (balances) => {
+			//console.log(balances);
+			let promiseArr = [];
+			let coinCountArr = [];
+			for (const key of Object.keys(balances)) {
+				if (balances[key].available <= 0) {
+					continue;
+				}
+				promiseArr.push(CryptoCompareApi.getCurrentPriceInEth(key));
+				coinCountArr.push(balances[key].available);
+			}
+
+			return Promise.join(
+				CryptoCompareApi.getCurrentPriceOfEthInUsd(),
+				Promise.all(promiseArr),
+				(currentPriceOfEthInUsd, currentPricesInEth) => {
+					let totalEthValue = 0;
+					for (var i = 0; i < currentPricesInEth.length; i++) {
+						totalEthValue += currentPricesInEth[i] * coinCountArr[i];
+					}
+					return {
+						"totalCurrentValueInEth": totalEthValue,
+						"totalCurrentValueInUsd" : totalEthValue * currentPriceOfEthInUsd
+					};
+				}
+			);	
+		});
+	}
+
+	getOverallPercentageGains() {
+		return Promise.join(
+			this.getAmountOfEthDeposited(),
+			this.getCurrentTotalAccountValue(),
+			(initialValue, currentValue) => {
+				let percentageUsdGain = currentValue.totalCurrentValueInUsd / initialValue.totalDepositedValueInUsd;
+				let percentageEthGain = currentValue.totalCurrentValueInEth / initialValue.totalDepositedValueInEth;
+				return {
+					percentageUsdGain: CommonUtil.formatAsPercentage(percentageUsdGain),
+					percentageEthGain: CommonUtil.formatAsPercentage(percentageEthGain)
+				};
+			}
+		);
 	}
 
 }

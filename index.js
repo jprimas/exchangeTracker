@@ -7,25 +7,21 @@ const app = express();
 // Serve the static files from the React app
 app.use(express.static(path.join(__dirname, 'client/build')));
 
-app.get('/api/getAllPercentageGains', (req,res) => {
+app.get('/api/getPercentageGainsOfAllCoins', (req,res) => {
 	let binanceHandler = new BinanceHandler();
 	return binanceHandler.getActiveSymbols()
 	.then( (activeSymbols) => {
-		binanceHandler.getAllPercentageGains(activeSymbols)
-		.then( (result) => {
-			return res.json(result);
-		});
+		binanceHandler.getPercentageGainsOfAllCoins(activeSymbols)
+		.then( result => res.json(result) );
 	});
 });
 
-app.get('/api/getDepositedEthValue', (req,res) => {
+app.get('/api/getOverallPercentageGains', (req,res) => {
 	let binanceHandler = new BinanceHandler();
-	return binanceHandler.getEthAmountDeposited()
-	.then( (result) => {
-		console.log(result.totalEthDeposited);
-		console.log(result.totalEthDepositedInUsd);
-		return result;
-	});
+	return binanceHandler.getOverallPercentageGains()
+	.then( result => res.json(result) ); //{
+		
+	// });
 });
 
 // Handles any requests that don't match the ones above
