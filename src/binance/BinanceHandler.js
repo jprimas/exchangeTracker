@@ -1,5 +1,5 @@
-const Binance = require('node-binance-api');
 const Promise = require('bluebird');
+const Binance = require('node-binance-api');
 const CryptoCompareApi = require('../utils/CryptoCompareApi');
 const CommonUtil = require('../utils/CommonUtil');
 require('dotenv').config();
@@ -8,25 +8,12 @@ require('dotenv').config();
 class BinanceHandler {
 
 	constructor() {
-		this.binance = new Binance().options({
+		this.binance = Promise.promisifyAll(new Binance().options({
 			APIKEY: process.env.BINANCE_TEST_API_KEY,
 			APISECRET: process.env.BINANCE_TEST_API_SECRET,
 			useServerTime: true,
 			test: true
-		});
-	}
-
-	getAccountBalances() {
-		return new Promise((resolve, reject) => {
-			this.binance.balance((error, balances) => {
-				if (error) {
-					console.log(error);
-					reject(error);
-				} else {
-					resolve(balances);
-				}
-			});
-		});
+		}));
 	}
 
 	/**
@@ -35,7 +22,7 @@ class BinanceHandler {
 	 * ETH coins are currently ignored
 	 */
 	getActiveSymbols() {
-		return this.getAccountBalances().then( (balances) => {
+		return this.binance.balanceAsync().then( (balances) => {
 			let activeSymbols = [];
 			for (const key of Object.keys(balances)) {
 				if (balances[key].available > 0 && key != "ETH") {
@@ -51,16 +38,7 @@ class BinanceHandler {
 	 * Currently assumes that all trades were paired with ETH
 	 */
 	getTradeHistoryOfCoin(symbol) {
-		return new Promise((resolve, reject) => {
-			this.binance.trades(symbol+"ETH", (error, trades, symbol) => {
-				if (error) {
-					console.log(error);
-					reject(error)
-				} else {
-					resolve(trades);
-				}
-			});
-		});
+		return this.binance.tradesAsync(symbol+"ETH");
 	}
 
 	/**
@@ -68,19 +46,12 @@ class BinanceHandler {
 	 * Currently assumes that the coins were bought with ETH 
 	 */
 	getCurrentValueOfCoin(symbol) {
-		return new Promise((resolve, reject) => {
-			this.binance.prices(symbol+"ETH", (error, ticker) => {
-				if (error) {
-					console.log(error);
-					reject(error)
-				} else {
-					let price = parseFloat(ticker[symbol+"ETH"]);
-					if (isNaN(price)) {
-						reject("Price is not a number");
-					}
-					resolve(price);
-				}
-			});
+		return this.binance.pricesAsync(symbol+"ETH").then( (data) => {
+			let price = parseFloat(data[symbol+"ETH"]);
+			if (isNaN(price)) {
+				throw "Binance returned invalid price for " + symbol;
+			}
+			return price;
 		});
 	}
 
@@ -151,15 +122,8 @@ class BinanceHandler {
 	}
 
 	getDepositHistoryOfCoin(symbol) {
-		return new Promise((resolve, reject) => {
-			this.binance.depositHistory((error, response) => {
-				if (error) {
-					console.log(error);
-					reject(error)
-				} else {
-					resolve(response);
-				}
-			}, symbol);
+		return Promise.fromCallback((cb) => {
+			this.binance.depositHistory(cb, symbol);
 		});
 	}
 
@@ -206,7 +170,7 @@ class BinanceHandler {
 	 * in the account
 	 */
 	getCurrentTotalAccountValue() {
-		return this.getAccountBalances().then( (balances) => {
+		return this.binance.balanceAsync().then( (balances) => {
 			//console.log(balances);
 			let promiseArr = [];
 			let coinCountArr = [];

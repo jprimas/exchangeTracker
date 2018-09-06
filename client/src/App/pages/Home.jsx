@@ -39,7 +39,7 @@ class Home extends Component {
           <div>
             {Object.keys(percentageGainsOfAllCoins).map((key) => {
               return(
-                <div>
+                <div key={key}>
                   {key + " => " + percentageGainsOfAllCoins[key] + "%"}
                 </div>
               );
