@@ -35,7 +35,7 @@ class Home extends Component {
     return (
     <div className="App">
       <h1>Coin Gains</h1>
-      {Object.keys(percentageGainsOfAllCoins).length ? (
+      {!percentageGainsOfAllCoins.hasError && Object.keys(percentageGainsOfAllCoins).length ? (
           <div>
             {Object.keys(percentageGainsOfAllCoins).map((key) => {
               return(
@@ -47,12 +47,12 @@ class Home extends Component {
           </div>
         ) : (
           <div>
-            <h2>Fetching Data...</h2>
+            <h2>{percentageGainsOfAllCoins.error ? percentageGainsOfAllCoins.error : "Fetching Data..."}</h2>
           </div>
         )
       }
       <h1>Total Gains</h1>
-      {overallPercentageGains ? (
+      {overallPercentageGains && !overallPercentageGains.hasError ? (
             <div>
               <div>
                 {"In USD => " + overallPercentageGains.percentageUsdGain + "%"}
@@ -63,7 +63,7 @@ class Home extends Component {
             </div>
           ) : (
             <div>
-              <h2>Fetching Data...</h2>
+              <h2>{overallPercentageGains.error ? overallPercentageGains.error : "Fetching Data..."}</h2>
             </div>
           )
       }

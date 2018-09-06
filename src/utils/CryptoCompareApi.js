@@ -25,12 +25,12 @@ class CryptoCompareApi {
 
 	static getCurrentPriceInUsd(fromSymbol) {
 		return this.getCurrentPrice(fromSymbol, "USD")
-		.then ( (data) => data.USD );
+		.then( (data) => data.USD );
 	}
 
 	static getCurrentPriceInEth(fromSymbol) {
 		return this.getCurrentPrice(fromSymbol, "ETH")
-		.then ( (data) => data.ETH );
+		.then( (data) => data.ETH );
 	}
 
 	static getCurrentPriceOfEthInUsd() {
@@ -59,12 +59,12 @@ class CryptoCompareApi {
 
 	static getHistoricalPriceInEth(fromSymbol, timestamp) {
 		return this.getHistoricalPrice(fromSymbol, "ETH", timestamp)
-		.then ( (data) => data[fromSymbol].ETH );
+		.then( (data) => data[fromSymbol].ETH );
 	}
 
 	static getHistoricalPriceInUsd(fromSymbol, timestamp) {
 		return this.getHistoricalPrice(fromSymbol, "USD", timestamp)
-		.then ( (data) => data[fromSymbol].USD );
+		.then( (data) => data[fromSymbol].USD );
 	}
 
 	static getHistoricalPriceOfEthInUsd(timestamp) {

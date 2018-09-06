@@ -9,19 +9,28 @@ app.use(express.static(path.join(__dirname, 'client/build')));
 
 app.get('/api/getPercentageGainsOfAllCoins', (req,res) => {
 	let binanceHandler = new BinanceHandler();
-	return binanceHandler.getActiveSymbols()
-	.then( (activeSymbols) => {
-		binanceHandler.getPercentageGainsOfAllCoins(activeSymbols)
-		.then( result => res.json(result) );
+	binanceHandler.getPercentageGainsOfAllCoins()
+	.then( result => res.json(result) )
+	.catch( error => {
+		console.log(error);
+		res.json({
+			hasError: true,
+			error: "Something went wrong"
+		});
 	});
 });
 
 app.get('/api/getOverallPercentageGains', (req,res) => {
 	let binanceHandler = new BinanceHandler();
 	return binanceHandler.getOverallPercentageGains()
-	.then( result => res.json(result) ); //{
-		
-	// });
+	.then( result => res.json(result) )
+	.catch( error => {
+		console.log(error);
+		res.json({
+			hasError: true,
+			error: "Something went wrong"
+		});
+	});
 });
 
 // Handles any requests that don't match the ones above

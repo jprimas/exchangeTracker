@@ -97,27 +97,32 @@ class BinanceHandler {
 	 * Loops through all active coins and calculates the percentage gain/loss
 	 * since the coin was bought
 	 */
-	getPercentageGainsOfAllCoins(activeSymbols = []) {
-		console.log(activeSymbols);
-		if (!activeSymbols || activeSymbols.length <= 0) {
-			return {};
-		}
-		let promiseArr = [];
-		for (var i = 0; i < activeSymbols.length; i++) {
-			promiseArr.push(this.getPercentageGainOfCoin(activeSymbols[i]));
-		}
-		return Promise.all(promiseArr).then(percentages => {
-			let result = {};
-			for (var i = 0; i < activeSymbols.length; i++) {
-				let symbol = activeSymbols[i];
-				let percentage = percentages[i];
-				if (isNaN(percentage)) {
-					// We don't handle airdrop coins
-					continue;
-				}
-				result[symbol] = percentage;
+	getPercentageGainsOfAllCoins() {
+		return this.getActiveSymbols().then( activeSymbols => {
+			console.log(activeSymbols);
+			if (!activeSymbols || activeSymbols.length <= 0) {
+				return {
+					hasError: true,
+					error: "Account has no active coins"
+				};
 			}
-			return result;
+			let promiseArr = [];
+			for (var i = 0; i < activeSymbols.length; i++) {
+				promiseArr.push(this.getPercentageGainOfCoin(activeSymbols[i]));
+			}
+			return Promise.all(promiseArr).then(percentages => {
+				let result = {};
+				for (var i = 0; i < activeSymbols.length; i++) {
+					let symbol = activeSymbols[i];
+					let percentage = percentages[i];
+					if (isNaN(percentage)) {
+						// We don't handle airdrop coins
+						continue;
+					}
+					result[symbol] = percentage;
+				}
+				return result;
+			});
 		});
 	}
 
