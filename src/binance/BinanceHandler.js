@@ -65,30 +65,24 @@ class BinanceHandler {
 			this.getCurrentValueOfCoin(symbol),
 			(trades, currentValue) => {
 				//console.log(trades);
-				let promiseArr = [];
-				let commissionArr = [];
+
 				let paidValue = 0;
 				let totalQty = 0;
-				for (var i = 0; i < trades.length; i++) {
-					let trade = trades[i];
+				return Promise.map(trades, function(trade) {
 					if (trade.isBuyer) {
-						totalQty += parseFloat(trade.qty);
-						promiseArr.push(CryptoCompareApi.getHistoricalPriceInEth(trade.commissionAsset, trade.time));
-						commissionArr.push(parseFloat(trade.commission));
-						paidValue += trade.qty * trade.price;
+						return CryptoCompareApi.getHistoricalPriceInEth(trade.commissionAsset, trade.time)
+						.then( historicalPrice => {
+							totalQty += parseFloat(trade.qty);
+							paidValue += trade.qty * trade.price + trade.commission * historicalPrice;
+						});
 					}
-				}
-
-				return Promise.all(promiseArr).then( (historicalValues) => {
-					for (var i = 0; i < historicalValues.length; i++) {
-						paidValue += commissionArr[i] * historicalValues[i];
-					}
+				}).then( () => {
 					if (paidValue == 0) {
 						// We don't handle airdrop coins
 						return NaN;
 					}
 					return CommonUtil.formatAsPercentage(currentValue * totalQty / paidValue);
-				});	
+				});
 			}
 		);
 	}
@@ -106,23 +100,16 @@ class BinanceHandler {
 					error: "Account has no active coins"
 				};
 			}
-			let promiseArr = [];
-			for (var i = 0; i < activeSymbols.length; i++) {
-				promiseArr.push(this.getPercentageGainOfCoin(activeSymbols[i]));
-			}
-			return Promise.all(promiseArr).then(percentages => {
-				let result = {};
-				for (var i = 0; i < activeSymbols.length; i++) {
-					let symbol = activeSymbols[i];
-					let percentage = percentages[i];
-					if (isNaN(percentage)) {
-						// We don't handle airdrop coins
-						continue;
+
+			let result = {};
+			return Promise.map(activeSymbols, symbol => {
+				return this.getPercentageGainOfCoin(symbol)
+				.then (percentage => {
+					if (!isNaN(percentage)) {
+						result[symbol] = percentage;
 					}
-					result[symbol] = percentage;
-				}
-				return result;
-			});
+				});
+			}).then( () => result );
 		});
 	}
 
@@ -147,26 +134,17 @@ class BinanceHandler {
 				return 0;
 			}
 
-			let promiseArr = [];
-			let depositedAmountArr = [];
-			for (var i = 0; i < depositHistory.depositList.length; i++) {
-				let depositedAmount = depositHistory.depositList[i].amount;
-				depositedAmountArr.push(depositedAmount);
-				promiseArr.push(CryptoCompareApi.getHistoricalPriceOfEthInUsd(depositHistory.depositList[i].insertTime));
-			}
-
-			return Promise.all(promiseArr).then( (historicalValues) => {
-				let totalEthDeposited = 0;
-				let totalEthDepositedInUsd = 0;
-				for (var i = 0; i < historicalValues.length; i++) {
-					totalEthDeposited += depositedAmountArr[i];
-					totalEthDepositedInUsd += historicalValues[i] * depositedAmountArr[i];
-				}
-				return {
-					"totalDepositedValueInEth": totalEthDeposited,
-					"totalDepositedValueInUsd" : totalEthDepositedInUsd
-				};
-			});	
+			let result = {
+				totalDepositedValueInEth: 0,
+				totalDepositedValueInUsd: 0
+			};
+			return Promise.map(depositHistory.depositList, deposit => {
+				return CryptoCompareApi.getHistoricalPriceOfEthInUsd(deposit.insertTime)
+				.then (historicalPriceOfEth => {
+					result.totalDepositedValueInEth += deposit.amount;
+					result.totalDepositedValueInUsd += historicalPriceOfEth * deposit.amount;
+				});
+			}).then( () => result );
 		});
 	}
 
@@ -175,33 +153,30 @@ class BinanceHandler {
 	 * in the account
 	 */
 	getCurrentTotalAccountValue() {
-		return this.binance.balanceAsync().then( (balances) => {
-			//console.log(balances);
-			let promiseArr = [];
-			let coinCountArr = [];
-			for (const key of Object.keys(balances)) {
-				if (balances[key].available <= 0) {
-					continue;
-				}
-				promiseArr.push(CryptoCompareApi.getCurrentPriceInEth(key));
-				coinCountArr.push(balances[key].available);
-			}
+		return Promise.join(
+			this.binance.balanceAsync(),
+			CryptoCompareApi.getCurrentPriceOfEthInUsd(),
+			(balances, currentPriceOfEthInUsd) => {
+				//console.log(balances);
 
-			return Promise.join(
-				CryptoCompareApi.getCurrentPriceOfEthInUsd(),
-				Promise.all(promiseArr),
-				(currentPriceOfEthInUsd, currentPricesInEth) => {
-					let totalEthValue = 0;
-					for (var i = 0; i < currentPricesInEth.length; i++) {
-						totalEthValue += currentPricesInEth[i] * coinCountArr[i];
+				let totalCurrentValueInEth = 0;
+				return Promise.map(Object.keys(balances), key => {
+					if (balances[key].available <= 0) {
+						return;
 					}
+
+					return CryptoCompareApi.getCurrentPriceInEth(key)
+					.then (currentPriceOfCoin => {
+						totalCurrentValueInEth += currentPriceOfCoin * balances[key].available;
+					});
+				}).then( () => {
 					return {
-						"totalCurrentValueInEth": totalEthValue,
-						"totalCurrentValueInUsd" : totalEthValue * currentPriceOfEthInUsd
+						totalCurrentValueInEth: totalCurrentValueInEth,
+						totalCurrentValueInUsd: currentPriceOfEthInUsd * totalCurrentValueInEth
 					};
-				}
-			);	
-		});
+				});
+			}
+		);
 	}
 
 	getOverallPercentageGains() {
@@ -209,6 +184,8 @@ class BinanceHandler {
 			this.getAmountOfEthDeposited(),
 			this.getCurrentTotalAccountValue(),
 			(initialValue, currentValue) => {
+				console.log(initialValue);
+				console.log(currentValue);
 				let percentageUsdGain = currentValue.totalCurrentValueInUsd / initialValue.totalDepositedValueInUsd;
 				let percentageEthGain = currentValue.totalCurrentValueInEth / initialValue.totalDepositedValueInEth;
 				return {
