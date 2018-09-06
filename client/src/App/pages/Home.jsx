@@ -7,18 +7,26 @@ class Home extends Component {
   constructor(props){
     super(props);
     this.state = {
-      allPercentageGains: {}
+      allPercentageGains: {},
+      depositedEthValue: ""
     }
   }
 
   componentDidMount() {
     this.getAllPercentageGains();
+    this.getDepositedEthValue();
   }
 
   getAllPercentageGains = () => {
     fetch('/api/getAllPercentageGains')
     .then(res => res.json())
     .then(allPercentageGains => this.setState({ allPercentageGains }))
+  }
+
+  getDepositedEthValue = () => {
+    fetch('/api/getDepositedEthValue')
+    .then(res => res.json())
+    .then(depositedEthValue => this.setState({ depositedEthValue }))
   }
 
   render() {

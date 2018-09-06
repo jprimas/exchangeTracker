@@ -7,7 +7,6 @@ const app = express();
 // Serve the static files from the React app
 app.use(express.static(path.join(__dirname, 'client/build')));
 
-// An api endpoint that returns a short list of items
 app.get('/api/getAllPercentageGains', (req,res) => {
 	let binanceHandler = new BinanceHandler();
 	return binanceHandler.getActiveSymbols()
@@ -15,8 +14,17 @@ app.get('/api/getAllPercentageGains', (req,res) => {
 		binanceHandler.getAllPercentageGains(activeSymbols)
 		.then( (result) => {
 			return res.json(result);
-			console.log(result);
 		});
+	});
+});
+
+app.get('/api/getDepositedEthValue', (req,res) => {
+	let binanceHandler = new BinanceHandler();
+	return binanceHandler.getEthAmountDeposited()
+	.then( (result) => {
+		console.log(result.totalEthDeposited);
+		console.log(result.totalEthDepositedInUsd);
+		return result;
 	});
 });
 

@@ -1,6 +1,8 @@
 const Binance = require('node-binance-api');
 const Promise = require('bluebird');
+const CryptoCompareApi = require('../utils/CryptoCompareApi');
 require('dotenv').config();
+
 
 class BinanceHandler {
 
@@ -13,6 +15,11 @@ class BinanceHandler {
 		});
 	}
 
+	/**
+	 * Loops through all possible coins on bBnance to create a list
+	 * of coins the user actually owns. 
+	 * ETH coins are currently ignored
+	 */
 	getActiveSymbols() {
 		return new Promise((resolve, reject) => {
 			this.binance.balance((error, balances) => {
@@ -32,6 +39,10 @@ class BinanceHandler {
 		});
 	}
 
+	/**
+	 * Given a coin symbol, queries for trade history for that coin
+	 * Currently assumes that all trades were paired with ETH
+	 */
 	getTradeHistory(symbol) {
 		return new Promise((resolve, reject) => {
 			this.binance.trades(symbol+"ETH", (error, trades, symbol) => {
@@ -45,6 +56,10 @@ class BinanceHandler {
 		});
 	}
 
+	/**
+	 * Given a coin symbol, queries for the current price of that coin
+	 * Currently assumes that the coins were bought with ETH 
+	 */
 	getCurrentValue(symbol) {
 		return new Promise((resolve, reject) => {
 			this.binance.prices(symbol+"ETH", (error, ticker) => {
@@ -62,13 +77,17 @@ class BinanceHandler {
 		});
 	}
 
+	/**
+	 * Given a coin symbol, calculate the percentage gain/loss
+	 * since the coin was bought. Subtracts the commission fee. 
+	 */
 	getPercentageGain(symbol) {
 		return Promise.join(
 			this.getTradeHistory(symbol),
 			this.getCurrentValue(symbol),
 			this.getCurrentValue("BNB"),
 			(trades, currentValue, bnbValue) => {
-			//console.log(trades);
+			console.log(trades);
 			let paidValue = 0;
 			let totalQty = 0;
 			for (var i = 0; i < trades.length; i++) {
@@ -90,6 +109,10 @@ class BinanceHandler {
 		});
 	}
 
+	/**
+	 * Loops through all active coins and calculates the percentage gain/loss
+	 * since the coin was bought
+	 */
 	getAllPercentageGains(activeSymbols = []) {
 		console.log(activeSymbols);
 		if (!activeSymbols || activeSymbols.length <= 0) {
@@ -113,6 +136,58 @@ class BinanceHandler {
 			return result;
 		});
 	}
+
+	getDepositHistory(symbol) {
+		return new Promise((resolve, reject) => {
+			this.binance.depositHistory((error, response) => {
+				if (error) {
+					console.log(error);
+					reject(error)
+				} else {
+					resolve(response);
+				}
+			}, symbol);
+		});
+	}
+
+	getEthDepositHistory() {
+		return this.getDepositHistory("ETH");
+	}
+
+	/**
+	 * Loops through all the ETH deposited into an account and calculates
+	 * the total ETH deposited and the total value in USD when the ETH
+	 * was deposited
+	 */
+	getEthAmountDeposited() {
+		return this.getEthDepositHistory().then((depositHistory) => {
+			if (!depositHistory && !depositHistory.success && depositHistory.depositList.length <= 0) {
+				return 0;
+			}
+
+			let promiseArr = [];
+			let depositedAmountArr = [];
+			for (var i = 0; i < depositHistory.depositList.length; i++) {
+				let depositedAmount = depositHistory.depositList[i].amount;
+				depositedAmountArr.push(depositedAmount);
+				promiseArr.push(CryptoCompareApi.getHistoricalPriceOfEthInUsd(depositHistory.depositList[i].insertTime));
+			}
+
+			return Promise.all(promiseArr).then( (historicalValues) => {
+				let totalEthDeposited = 0;
+				let totalEthDepositedInUsd = 0;
+				for (var i = 0; i < historicalValues.length; i++) {
+					totalEthDeposited += depositedAmountArr[i];
+					totalEthDepositedInUsd += historicalValues[i] * depositedAmountArr[i];
+				}
+				return {
+					"totalEthDeposited": totalEthDeposited,
+					"totalEthDepositedInUsd" : totalEthDepositedInUsd
+				};
+			});	
+		});
+	}
+
 }
 
 module.exports = BinanceHandler;
