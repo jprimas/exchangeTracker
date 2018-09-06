@@ -15,8 +15,7 @@ class CryptoCompareApi {
 			params: {
 				fsym: fromSymbol,
 				tsyms: toSymbol,
-				ts: timestamp/1000, // convert to unix timestamp
-
+				ts: (+timestamp/1000).toFixed(0) // convert to unix timestamp
 			}
 		})
 		.then(function (response) {

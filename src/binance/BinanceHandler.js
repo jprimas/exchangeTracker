@@ -85,28 +85,34 @@ class BinanceHandler {
 		return Promise.join(
 			this.getTradeHistory(symbol),
 			this.getCurrentValue(symbol),
-			this.getCurrentValue("BNB"),
-			(trades, currentValue, bnbValue) => {
-			console.log(trades);
-			let paidValue = 0;
-			let totalQty = 0;
-			for (var i = 0; i < trades.length; i++) {
-				let trade = trades[i];
-				if (trade.isBuyer) {
-					totalQty += parseFloat(trade.qty);
-					let commisionAssetValue = currentValue;
-					if (trade.commissionAsset === "BNB") {
-						commisionAssetValue = bnbValue;
+			(trades, currentValue) => {
+				console.log(trades);
+				let promiseArr = [];
+				let commissionArr = [];
+				let paidValue = 0;
+				let totalQty = 0;
+				for (var i = 0; i < trades.length; i++) {
+					let trade = trades[i];
+					if (trade.isBuyer) {
+						totalQty += parseFloat(trade.qty);
+						promiseArr.push(CryptoCompareApi.getHistoricalPriceInEth(trade.commissionAsset, trade.time));
+						commissionArr.push(parseFloat(trade.commission));
+						paidValue += trade.qty * trade.price;
 					}
-					paidValue += (trade.qty * trade.price + parseFloat(trade.commission) * commisionAssetValue);
 				}
+
+				return Promise.all(promiseArr).then( (historicalValues) => {
+					for (var i = 0; i < historicalValues.length; i++) {
+						paidValue += commissionArr[i] * historicalValues[i];
+					}
+					if (paidValue == 0) {
+						// We don't handle airdrop coins
+						return NaN;
+					}
+					return ((((currentValue * totalQty) / paidValue) - 1) * 100).toFixed(2);
+				});	
 			}
-			if (paidValue == 0) {
-				// We don't handle airdrop coins
-				return NaN;
-			}
-			return ((((currentValue * totalQty) / paidValue) - 1) * 100).toFixed(2);
-		});
+		);
 	}
 
 	/**
