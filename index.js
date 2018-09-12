@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
-const BinanceHandler = require('./src/binance/BinanceHandler')
+const BinanceHandler = require('./src/binance/BinanceHandler');
+const TransactionProcessor = require('./src/helpers/TransactionProcessor')
 
 const app = express();
 
@@ -8,6 +9,10 @@ const app = express();
 app.use(express.static(path.join(__dirname, 'client/build')));
 
 app.get('/api/getPercentageGainsOfAllCoins', (req,res) => {
+	let transactionProcessor = new TransactionProcessor();
+	transactionProcessor.process();
+
+
 	let binanceHandler = new BinanceHandler();
 	binanceHandler.getPercentageGainsOfAllCoins()
 	.then( result => res.json(result) )

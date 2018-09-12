@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const Binance = require('node-binance-api');
 const CryptoCompareApi = require('../utils/CryptoCompareApi');
-const CommonUtil = require('../utils/CommonUtil');
+const {CommonUtil} = require('../utils/CommonUtil');
 require('dotenv').config();
 
 
@@ -68,7 +68,7 @@ class BinanceHandler {
 
 				let paidValue = 0;
 				let totalQty = 0;
-				return Promise.map(trades, function(trade) {
+				return Promise.map(trades, (trade) => {
 					if (trade.isBuyer) {
 						return CryptoCompareApi.getHistoricalPriceInEth(trade.commissionAsset, trade.time)
 						.then( historicalPrice => {
@@ -109,7 +109,7 @@ class BinanceHandler {
 						result[symbol] = percentage;
 					}
 				});
-			}).then( () => result );
+			}).then( () => CommonUtil.orderJsonObjectAlphabetically(result) );
 		});
 	}
 
@@ -184,8 +184,6 @@ class BinanceHandler {
 			this.getAmountOfEthDeposited(),
 			this.getCurrentTotalAccountValue(),
 			(initialValue, currentValue) => {
-				console.log(initialValue);
-				console.log(currentValue);
 				let percentageUsdGain = currentValue.totalCurrentValueInUsd / initialValue.totalDepositedValueInUsd;
 				let percentageEthGain = currentValue.totalCurrentValueInEth / initialValue.totalDepositedValueInEth;
 				return {
@@ -194,6 +192,65 @@ class BinanceHandler {
 				};
 			}
 		);
+	}
+
+	getEthDebositAddress() {
+		return this.binance.depositAddressAsync("ETH");
+	}
+
+
+
+
+	getTransactionsForCoin(symbol) {
+		return this.getTradeHistoryOfCoin(symbol).then( (trades, currentValue) => {
+				//console.log(trades);
+				let transactions = [];
+				return Promise.map(trades, (trade) => {
+					if (trade.isBuyer) {
+						transactions.push({
+							type: TransactionTypes.TRADE,
+							timestamp: new Date(trade.time),
+							fromSymbol: trade.symbol.substring(3),
+							toSymbol: trade.symbol.substring(0,3),
+							amount: parseFloat(trade.qty),
+							price: parseFloat(trade.price),
+							commissionAmount:  parseFloat(trade.commission),
+							comissionAsset: trade.commissionAsset
+						});
+					} else if (!trade.isBuyer) {
+						transactions.push({
+							type: TransactionTypes.TRADE,
+							timestamp: new Date(trade.time),
+							fromSymbol: trade.symbol.substring(0,3),
+							toSymbol: trade.symbol.substring(3),
+							amount: parseFloat(trade.qty),
+							price: parseFloat(trade.price),
+							commissionAmount:  parseFloat(trade.commission),
+							comissionAsset: trade.commissionAsset
+						});
+					}
+				}).then( () => transactions );
+			}
+		);
+	}
+
+	getBinanceTransactions() {
+		return this.getActiveSymbols().then( activeSymbols => {
+			if (!activeSymbols || activeSymbols.length <= 0) {
+				return {
+					hasError: true,
+					error: "Account has no active coins"
+				};
+			}
+
+			let transactions = [];
+			return Promise.map(activeSymbols, symbol => {
+				return this.getTransactionsForCoin(symbol)
+				.then( coinTrxs => {
+					transactions = transactions.concat(coinTrxs);
+				});
+			}).then( () => transactions );
+		});
 	}
 
 }
