@@ -12,7 +12,17 @@ class CoinbaseHandler {
 		}));
 	}
 
-	getDepositsAndWithdrawls(acct) {
+	_getIsExternalPaymentMethodMap() {
+		let isExternalPaymentMethodMap = {};
+		return this.coinbase.getPaymentMethodsAsync(null).then( (paymentMethods) => {
+			for (let i = 0; i < paymentMethods.length; i++) {
+				let paymentMethod = paymentMethods[i];
+				isExternalPaymentMethodMap[paymentMethod.id] = paymentMethod.type === 'fiat_account' ? false : true;
+			}
+		}).then( () => isExternalPaymentMethodMap);
+	}
+
+	_getDepositsAndWithdrawls(acct) {
 		let transactions = [];
 		return Promise.fromCallback((cb) => {
 			acct.getTransactions(null, cb);
@@ -40,26 +50,27 @@ class CoinbaseHandler {
 		}).then( () => transactions );
 	}
 
-	getTrades(acct) {
-		return Promise.join(
-			this.getBuys(acct),
-			this.getSells(acct),
-			(buys, sells) => {
-				return buys.concat(sells);
-			}
-		);
+	_getTrades(acct) {
+		return this._getIsExternalPaymentMethodMap().then( (isExternalPaymentMethodMap) => {
+			return Promise.join(
+				this._getBuys(acct, isExternalPaymentMethodMap),
+				this._getSells(acct, isExternalPaymentMethodMap),
+				(buys, sells) => {
+					return buys.concat(sells);
+				}
+			);
+		});
 	}
 
-	getBuys(acct) {
+	_getBuys(acct, isExternalPaymentMethodMap) {
 		let transactions = [];
 		return Promise.fromCallback((cb) => {
 			acct.getBuys(null, cb);
 		}).then( (trxs) => {
 			for (let i = 0; i < trxs.length; i++) {
 				let trx = trxs[i];
-				console.log(trx.fees);
+				//console.log(trx);
 				let coinbaseFee = trx.fees.filter(fee => fee.type === 'coinbase')[0];
-				//TODO: get bank fee
 				if (trx.resource === 'buy' && trx.status === 'completed') {
 					transactions.push({
 						type: TransactionTypes.TRADE,
@@ -67,25 +78,36 @@ class CoinbaseHandler {
 						fromSymbol: 'USD',
 						toSymbol: 'ETH',
 						amount: parseFloat(trx.amount.amount),
-						price: parseFloat(trx.subtotal.amount),
+						price: parseFloat(trx.subtotal.amount) / parseFloat(trx.amount.amount),
 						commissionAmount: parseFloat(coinbaseFee.amount.amount),
 						comissionAsset: coinbaseFee.amount.currency
 					})
+					// If this is directly coming from an external bank also create a deposit trx
+					if (trx.payment_method && trx.payment_method.id && isExternalPaymentMethodMap[trx.payment_method.id]) {
+						let bankFee = trx.fees.filter(fee => fee.type === 'bank')[0];
+						transactions.push({
+							type: TransactionTypes.DEPOSIT,
+							timestamp: new Date(trx.created_at),
+							fromSymbol: 'USD',
+							amount: parseFloat(trx.total.amount),
+							commissionAmount: parseFloat(bankFee.amount.amount),
+							comissionAsset: bankFee.amount.currency
+						})
+					}
 				}
+				
 			}
 		}).then( () => transactions );
 	}
 
-	getSells(acct) {
+	_getSells(acct, isExternalPaymentMethodMap) {
 		let transactions = [];
 		return Promise.fromCallback((cb) => {
 			acct.getSells(null, cb);
 		}).then( (trxs) => {
 			for (let i = 0; i < trxs.length; i++) {
 				let trx = trxs[i];
-				//console.log(trx);
 				let coinbaseFee = trx.fees.filter(fee => fee.type === 'coinbase');
-				//TODO: get bank fee
 				if (trx.resource === 'sell' && trx.status === 'completed') {
 					transactions.push({
 						type: TransactionTypes.TRADE,
@@ -93,10 +115,22 @@ class CoinbaseHandler {
 						fromSymbol: 'ETH',
 						toSymbol: 'USD',
 						amount: parseFloat(trx.amount.amount),
-						price: parseFloat(trx.subtotal.amount),
+						price: parseFloat(trx.subtotal.amount) / parseFloat(trx.amount.amount),
 						commissionAmount: parseFloat(coinbaseFee.amount),
 						comissionAsset: coinbaseFee.currency
 					})
+					// If this is directly going to an external bank also create a withdrawal trx
+					if (trx.payment_method && trx.payment_method.id && isExternalPaymentMethodMap[trx.payment_method.id]) {
+						let bankFee = trx.fees.filter(fee => fee.type === 'bank')[0];
+						transactions.push({
+							type: TransactionTypes.WITHDRAW,
+							timestamp: new Date(trx.created_at),
+							fromSymbol: 'USD',
+							amount: parseFloat(trx.total.amount),
+							commissionAmount: parseFloat(bankFee.amount.amount),
+							comissionAsset: bankFee.amount.currency
+						})
+					}
 				}
 			}
 		}).then( () => transactions );
@@ -107,16 +141,15 @@ class CoinbaseHandler {
 			let transactions = [];
 			return Promise.map(accounts, (acct) => {
 				if (acct.currency === 'USD') {
-					return this.getDepositsAndWithdrawls(acct).then( trxs => {
+					return this._getDepositsAndWithdrawls(acct).then( trxs => {
 						transactions = transactions.concat(trxs);
 					});
 				} else if (acct.currency === 'ETH') {
-					return this.getTrades(acct).then( trxs => {
+					return this._getTrades(acct).then( trxs => {
 						transactions = transactions.concat(trxs);
 					});
 				}
 			}).then( () => {
-				//console.log(transactions);
 				return transactions;
 			});
 		});

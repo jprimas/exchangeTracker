@@ -17,7 +17,7 @@ class GdaxHandler {
 		);
 	}
 
-	getDepositsAndWithdrawls() {
+	_getDepositsAndWithdrawls() {
 		// TODO - does this differ from coinbase is any scenarios???
 		return [];
 		// return this.gdax.getAccounts().then( (accounts) => {
@@ -53,7 +53,7 @@ class GdaxHandler {
 		// });
 	}
 
-	getTrades() {
+	_getTrades() {
 		let transactions = [];
 		return this.gdax.getFills({product_id: 'ETH-USD'}).then( (trades) => {
 			for (let i = 0; i < trades.length; i++) {
@@ -91,8 +91,8 @@ class GdaxHandler {
 
 	getGdaxTransactions() {
 		return Promise.join(
-			this.getDepositsAndWithdrawls(),
-			this.getTrades(),
+			this._getDepositsAndWithdrawls(),
+			this._getTrades(),
 			(depositsAndWithdrawls, trades) => {
 				//console.log(depositsAndWithdrawls);
 				return depositsAndWithdrawls.concat(trades);

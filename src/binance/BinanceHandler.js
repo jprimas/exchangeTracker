@@ -201,7 +201,7 @@ class BinanceHandler {
 
 
 
-	getTransactionsForCoin(symbol) {
+	_getTransactionsForCoin(symbol) {
 		return this.getTradeHistoryOfCoin(symbol).then( (trades, currentValue) => {
 				//console.log(trades);
 				let transactions = [];
@@ -245,7 +245,7 @@ class BinanceHandler {
 
 			let transactions = [];
 			return Promise.map(activeSymbols, symbol => {
-				return this.getTransactionsForCoin(symbol)
+				return this._getTransactionsForCoin(symbol)
 				.then( coinTrxs => {
 					transactions = transactions.concat(coinTrxs);
 				});
