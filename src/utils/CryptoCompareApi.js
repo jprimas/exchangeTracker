@@ -72,14 +72,21 @@ class CryptoCompareApi {
 	static getHistoricalPriceInUsd(fromSymbol, timestamp) {
 		return this.getHistoricalPrice(fromSymbol, "USD", timestamp, 0)
 		.then( (data) => {
-			console.log(fromSymbol);
-			console.log(data);
 			return data[fromSymbol].USD
 		});
 	}
 
 	static getHistoricalPriceOfEthInUsd(timestamp) {
 		return this.getHistoricalPriceInUsd("ETH", timestamp);
+	}
+
+	static convertAssetValueToUsd(symbol, amount, timestamp) {
+		if (symbol == 'USD') {
+			return Promise.resolve(amount);
+		}
+		return this.getHistoricalPriceInUsd(symbol, timestamp).then( historicalPrice => {
+			return historicalPrice * amount;
+		});
 	}
 
 }

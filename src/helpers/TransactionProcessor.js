@@ -17,59 +17,33 @@ class TransactionProcessor {
 
 	process() {
 		this._getAllTransactions().then( (trxs) => {
-			console.log(trxs);
-			let promiseArray = [];
+			//console.log(trxs);
+			let promiseArr = [];
 			let purse = new Purse();
-			let totalUsdInvested = 0;
-			let totalFeesInUsd = 0;
 			for (let i = 0; i < trxs.length; i++) {
 				let trx = trxs[i];
-				if (trx.commissionAmount > 0) {
-					purse.addCoin(trx.comissionAsset, -trx.commissionAmount);
-					promiseArray.push(this._convertAssetValueToUsd(trx.comissionAsset, trx.commissionAmount, trx.timestamp).then( assetValueInUsd => {
-						totalFeesInUsd += assetValueInUsd;
-					}));
-				}
 				switch (trx.type) {
 					case TransactionTypes.DEPOSIT:
 						// Currently means depositing USD
-						purse.addUsd(trx.amount);
+						let x = purse.handleDeposit(trx);
+						promiseArr = promiseArr.concat(x);
 						break;
 					case TransactionTypes.WITHDRAW:
 						// Currently means withdrawing USD
-						purse.addUsd(-trx.amount);
+						promiseArr = promiseArr.concat(purse.handleWithdrawal(trx));
 						break;
 					case TransactionTypes.TRADE:
-						promiseArray.push(purse.handleTrade(trx));
-						if (trx.fromSymbol == 'USD') {
-							totalUsdInvested += trx.amount * trx.price;
-						}
+						promiseArr = promiseArr.concat(purse.handleTrade(trx));
 						break;
 				}
 			}
-			let currentTotalValueInUsd = 0;
-			promiseArray.push(purse.calculateCurrentValues().then( totalValueInUsd => {
-				currentTotalValueInUsd = totalValueInUsd;
-				//console.log(CommonUtil.formatAsPercentage(totalValueInUsd/(totalUsdInvested-totalUsdWithdrawn)));
-			}));
 
-
-			Promise.all(promiseArray).then( () => {
-				console.log("totalUsdInvested: " + totalUsdInvested);
-				console.log("totalFeesInUsd: " + totalFeesInUsd);
-				console.log("currentTotalValueInUsd: " + currentTotalValueInUsd);
-				console.log(purse.getPurse());
+			Promise.all(promiseArr).then( () => {
+				purse.postProcessPurse().then( () => {
+					console.log(purse.getPurse());
+				});	
 			})
 		})
-	}
-
-	_convertAssetValueToUsd(symbol, amount, timestamp) {
-		if (symbol == 'USD') {
-			return Promise.resolve(amount);
-		}
-		return CryptoCompareApi.getHistoricalPriceInUsd(symbol, timestamp).then( historicalPrice => {
-			return historicalPrice * amount;
-		});
 	}
 
 	_getAllTransactions() {

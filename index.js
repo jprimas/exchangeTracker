@@ -1,6 +1,5 @@
 const express = require('express');
 const path = require('path');
-const BinanceHandler = require('./src/binance/BinanceHandler');
 const TransactionProcessor = require('./src/helpers/TransactionProcessor')
 
 const app = express();
@@ -11,31 +10,9 @@ app.use(express.static(path.join(__dirname, 'client/build')));
 app.get('/api/getPercentageGainsOfAllCoins', (req,res) => {
 	let transactionProcessor = new TransactionProcessor();
 	transactionProcessor.process();
-
-
-	// let binanceHandler = new BinanceHandler();
-	// binanceHandler.getPercentageGainsOfAllCoins()
-	// .then( result => res.json(result) )
-	// .catch( error => {
-	// 	console.log(error);
-	// 	res.json({
-	// 		hasError: true,
-	// 		error: "Something went wrong"
-	// 	});
-	// });
 });
 
 app.get('/api/getOverallPercentageGains', (req,res) => {
-	// let binanceHandler = new BinanceHandler();
-	// return binanceHandler.getOverallPercentageGains()
-	// .then( result => res.json(result) )
-	// .catch( error => {
-	// 	console.log(error);
-	// 	res.json({
-	// 		hasError: true,
-	// 		error: "Something went wrong"
-	// 	});
-	// });
 });
 
 // Handles any requests that don't match the ones above
