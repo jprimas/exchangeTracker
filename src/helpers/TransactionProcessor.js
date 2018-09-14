@@ -21,44 +21,45 @@ class TransactionProcessor {
 			let promiseArray = [];
 			let purse = new Purse();
 			let totalUsdInvested = 0;
-			let totalComissionPaidInUsd = 0;
+			let totalFeesInUsd = 0;
 			for (let i = 0; i < trxs.length; i++) {
 				let trx = trxs[i];
 				if (trx.commissionAmount > 0) {
 					purse.addCoin(trx.comissionAsset, -trx.commissionAmount);
 					promiseArray.push(this._convertAssetValueToUsd(trx.comissionAsset, trx.commissionAmount, trx.timestamp).then( assetValueInUsd => {
-						totalComissionPaidInUsd += assetValueInUsd;
+						totalFeesInUsd += assetValueInUsd;
 					}));
 				}
 				switch (trx.type) {
 					case TransactionTypes.DEPOSIT:
 						// Currently means depositing USD
-						purse.addCoin(trx.fromSymbol, trx.amount);
+						purse.addUsd(trx.amount);
 						break;
 					case TransactionTypes.WITHDRAW:
 						// Currently means withdrawing USD
-						purse.addCoin(trx.fromSymbol, -trx.amount);
+						purse.addUsd(-trx.amount);
 						break;
 					case TransactionTypes.TRADE:
-						purse.addCoin(trx.fromSymbol, -trx.amount * trx.price);
-						purse.addCoin(trx.toSymbol, trx.amount);
+						promiseArray.push(purse.handleTrade(trx));
 						if (trx.fromSymbol == 'USD') {
 							totalUsdInvested += trx.amount * trx.price;
 						}
-						// promiseArray.push(_convertAssetValueToUsd(trx.fromSymbol).then( assetValueInUsd => {
-						// 	totalComissionPaidInUsd += assetValueInUsd;
-						// });
-						// promiseArray.push(_convertAssetValueToUsd(trx.toSymbol).then( assetValueInUsd => {
-						// 	totalComissionPaidInUsd += assetValueInUsd;
-						// });
 						break;
 				}
 			}
-			console.log(purse.getPurse());
-			purse.getTotalValueOfPurseInUsd().then( totalValueInUsd => {
-				console.log(totalValueInUsd);
+			let currentTotalValueInUsd = 0;
+			promiseArray.push(purse.calculateCurrentValues().then( totalValueInUsd => {
+				currentTotalValueInUsd = totalValueInUsd;
 				//console.log(CommonUtil.formatAsPercentage(totalValueInUsd/(totalUsdInvested-totalUsdWithdrawn)));
-			});
+			}));
+
+
+			Promise.all(promiseArray).then( () => {
+				console.log("totalUsdInvested: " + totalUsdInvested);
+				console.log("totalFeesInUsd: " + totalFeesInUsd);
+				console.log("currentTotalValueInUsd: " + currentTotalValueInUsd);
+				console.log(purse.getPurse());
+			})
 		})
 	}
 

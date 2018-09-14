@@ -40,31 +40,42 @@ class CryptoCompareApi {
 	/**
 	 * Queries for the historical price of a specific coin at a given timestamp
 	 */
-	static getHistoricalPrice(fromSymbol, toSymbol, timestamp) {
+	static getHistoricalPrice(fromSymbol, toSymbol, timestamp, count) {
 		return axios.get(BASE_URL + '/data/pricehistorical', {
 			params: {
 				fsym: fromSymbol,
 				tsyms: toSymbol,
-				ts: timestamp.getTime() // convert to unix timestamp
+				ts: (+timestamp.getTime()/1000).toFixed(0) // convert to unix timestamp
 			}
 		})
-		.then(function (response) {
-			if (!response || response.status != 200) {
+		.then( (response) => {
+			if ((!response || !response.data || response.data.Type < 100) && count >=3) {
 				console.log(response.statusText);
+			} else if (!response || !response.data || response.data.Type < 100) {
+				return new Promise((resolve, reject) => {
+					setTimeout(() => {
+						resolve(this.getHistoricalPrice(fromSymbol, toSymbol, timestamp, count+1));
+					}, 1000);
+				}).then( (historicalPrice) => historicalPrice);
+				
 			} else {
 				return response.data
 			}
-		})
+		});
 	}
 
 	static getHistoricalPriceInEth(fromSymbol, timestamp) {
-		return this.getHistoricalPrice(fromSymbol, "ETH", timestamp)
+		return this.getHistoricalPrice(fromSymbol, "ETH", timestamp, 0)
 		.then( (data) => data[fromSymbol].ETH );
 	}
 
 	static getHistoricalPriceInUsd(fromSymbol, timestamp) {
-		return this.getHistoricalPrice(fromSymbol, "USD", timestamp)
-		.then( (data) => data[fromSymbol].USD );
+		return this.getHistoricalPrice(fromSymbol, "USD", timestamp, 0)
+		.then( (data) => {
+			console.log(fromSymbol);
+			console.log(data);
+			return data[fromSymbol].USD
+		});
 	}
 
 	static getHistoricalPriceOfEthInUsd(timestamp) {

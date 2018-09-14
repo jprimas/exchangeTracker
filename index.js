@@ -13,29 +13,29 @@ app.get('/api/getPercentageGainsOfAllCoins', (req,res) => {
 	transactionProcessor.process();
 
 
-	let binanceHandler = new BinanceHandler();
-	binanceHandler.getPercentageGainsOfAllCoins()
-	.then( result => res.json(result) )
-	.catch( error => {
-		console.log(error);
-		res.json({
-			hasError: true,
-			error: "Something went wrong"
-		});
-	});
+	// let binanceHandler = new BinanceHandler();
+	// binanceHandler.getPercentageGainsOfAllCoins()
+	// .then( result => res.json(result) )
+	// .catch( error => {
+	// 	console.log(error);
+	// 	res.json({
+	// 		hasError: true,
+	// 		error: "Something went wrong"
+	// 	});
+	// });
 });
 
 app.get('/api/getOverallPercentageGains', (req,res) => {
-	let binanceHandler = new BinanceHandler();
-	return binanceHandler.getOverallPercentageGains()
-	.then( result => res.json(result) )
-	.catch( error => {
-		console.log(error);
-		res.json({
-			hasError: true,
-			error: "Something went wrong"
-		});
-	});
+	// let binanceHandler = new BinanceHandler();
+	// return binanceHandler.getOverallPercentageGains()
+	// .then( result => res.json(result) )
+	// .catch( error => {
+	// 	console.log(error);
+	// 	res.json({
+	// 		hasError: true,
+	// 		error: "Something went wrong"
+	// 	});
+	// });
 });
 
 // Handles any requests that don't match the ones above
