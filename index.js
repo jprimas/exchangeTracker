@@ -7,12 +7,36 @@ const app = express();
 // Serve the static files from the React app
 app.use(express.static(path.join(__dirname, 'client/build')));
 
-app.get('/api/getPercentageGainsOfAllCoins', (req,res) => {
+app.get('/api/processPurse', (req,res) => {
 	let transactionProcessor = new TransactionProcessor();
-	transactionProcessor.process();
+	return transactionProcessor.process()
+	.then( result => {
+		console.log(result)
+		return res.json(result) 
+	})
+	.catch( error => {
+		console.log(error);
+		res.json({
+			hasError: true,
+			error: "Something went wrong"
+		});
+	});
 });
 
-app.get('/api/getOverallPercentageGains', (req,res) => {
+app.get('/api/getTransactions', (req,res) => {
+	let transactionProcessor = new TransactionProcessor();
+	return transactionProcessor.getAllTransactions()
+	.then( result => {
+		console.log(result)
+		return res.json(result) 
+	})
+	.catch( error => {
+		console.log(error);
+		res.json({
+			hasError: true,
+			error: "Something went wrong"
+		});
+	});
 });
 
 // Handles any requests that don't match the ones above

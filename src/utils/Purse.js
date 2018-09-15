@@ -112,7 +112,7 @@ class Purse {
 	postProcessPurse() {
 		return this.calculateCurrentValues().then( currentTotalValueInUsd => {
 			this.purse.currentTotalValueInUsd = currentTotalValueInUsd;
-			this.purse.totalPercentageGainInUse = CommonUtil.formatAsPercentage(currentTotalValueInUsd / this.purse.totalUsdInvested);
+			this.purse.totalPercentageGainInUsd = CommonUtil.formatAsPercentage(currentTotalValueInUsd / this.purse.totalUsdInvested);
 		})
 	}
 

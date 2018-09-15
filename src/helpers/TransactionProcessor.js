@@ -16,7 +16,7 @@ class TransactionProcessor {
 	}
 
 	process() {
-		this._getAllTransactions().then( (trxs) => {
+		return this.getAllTransactions().then( (trxs) => {
 			//console.log(trxs);
 			let promiseArr = [];
 			let purse = new Purse();
@@ -38,15 +38,15 @@ class TransactionProcessor {
 				}
 			}
 
-			Promise.all(promiseArr).then( () => {
-				purse.postProcessPurse().then( () => {
-					console.log(purse.getPurse());
+			return Promise.all(promiseArr).then( () => {
+				return purse.postProcessPurse().then( () => {
+					return purse.getPurse();
 				});	
 			})
 		})
 	}
 
-	_getAllTransactions() {
+	getAllTransactions() {
 		return Promise.join(
 			this.binanceHandler.getBinanceTransactions(),
 			this.gdaxHandler.getGdaxTransactions(),

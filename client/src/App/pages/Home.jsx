@@ -1,72 +1,67 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import Transactions from '../widgets/Transactions';
 
 
 class Home extends Component {
 
-  constructor(props){
+  constructor(props) {
     super(props);
     this.state = {
-      percentageGainsOfAllCoins: {},
-      overallPercentageGains: ""
+      purse: null
     }
   }
 
   componentDidMount() {
-    this.getPercentageGainsOfAllCoins();
-    this.getOverallPercentageGains();
+    this.getProcessedPurse();
   }
 
-  getPercentageGainsOfAllCoins = () => {
-    fetch('/api/getPercentageGainsOfAllCoins')
+  getProcessedPurse = () => {
+    fetch('/api/processPurse')
     .then(res => res.json())
-    .then(percentageGainsOfAllCoins => this.setState({ percentageGainsOfAllCoins }))
-  }
-
-  getOverallPercentageGains = () => {
-    fetch('/api/getOverallPercentageGains')
-    .then(res => res.json())
-    .then(overallPercentageGains => this.setState({ overallPercentageGains }))
+    .then(purse => this.setState({ purse }))
   }
 
   render() {
-    const { percentageGainsOfAllCoins, overallPercentageGains } = this.state;
-
+    const { purse } = this.state;
     return (
     <div className="App">
-      <h1>Coin Gains</h1>
-      {!percentageGainsOfAllCoins.hasError && Object.keys(percentageGainsOfAllCoins).length ? (
+      <h1>Individual Coin Analysis</h1>
+      {purse && !purse.hasError && Object.keys(purse.coins).length ? (
           <div>
-            {Object.keys(percentageGainsOfAllCoins).map((key) => {
+            {Object.keys(purse.coins).map((key) => {
+              if (key === 'USD') return;
               return(
                 <div key={key}>
-                  {key + " => " + percentageGainsOfAllCoins[key] + "%"}
+                  {key + " => " + purse.coins[key].percentageGainInUsd + "%"}
                 </div>
               );
             })}
           </div>
         ) : (
           <div>
-            <h2>{percentageGainsOfAllCoins.error ? percentageGainsOfAllCoins.error : "Fetching Data..."}</h2>
+            <h2>{purse && purse.error ? purse.error : "Fetching Data..."}</h2>
           </div>
         )
       }
-      <h1>Total Gains</h1>
-      {overallPercentageGains && !overallPercentageGains.hasError ? (
+      <h1>Total Value Analysis</h1>
+      {purse && !purse.hasError ? (
             <div>
               <div>
-                {"In USD => " + overallPercentageGains.percentageUsdGain + "%"}
+                {"Total Percentage Gains in USD => " + purse.totalPercentageGainInUsd + "%"}
               </div>
               <div>
-                {"In ETH => " + overallPercentageGains.percentageEthGain + "%"}
+                {"Total Fees Paid => $" + purse.totalFeesInUsd}
               </div>
             </div>
           ) : (
             <div>
-              <h2>{overallPercentageGains.error ? overallPercentageGains.error : "Fetching Data..."}</h2>
+              <h2>{purse && purse.error ? purse.error : "Fetching Data..."}</h2>
             </div>
           )
       }
+      <h1>Transaction Feed</h1>
+      <Transactions/>
     </div>
     );
   }
