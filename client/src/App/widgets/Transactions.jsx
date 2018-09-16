@@ -15,7 +15,7 @@ class Transactions extends Component {
   }
 
   getTransactions = () => {
-    fetch('/api/getTransactions')
+    fetch('/api/secure/getTransactions')
     .then(res => res.json())
     .then(transactions => this.setState({ transactions }))
   }
