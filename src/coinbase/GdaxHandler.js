@@ -8,11 +8,11 @@ const GDAX_SANDBOX_API_URL = 'https://api-public.sandbox.gdax.com';
 
 class GdaxHandler {
 
-	constructor() {
+	constructor(login) {
 		this.gdax = new Gdax.AuthenticatedClient(
-			process.env.GDAX_TEST_API_KEY,
-			process.env.GDAX_TEST_API_SECRET,
-			process.env.GDAX_TEST_API_PASSPHRASE,
+			login.gdax_api_key,
+			login.gdax_api_secret,
+			login.gdax_api_passphrase,
 			GDAX_API_URL
 		);
 	}

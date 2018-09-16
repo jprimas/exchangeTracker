@@ -9,10 +9,10 @@ const CryptoCompareApi = require('../utils/CryptoCompareApi');
 
 class TransactionProcessor {
 
-	constructor() {
-		this.binanceHandler = new BinanceHandler();
-		this.gdaxHandler = new GdaxHandler();
-		this.coinbasehandler = new CoinbaseHandler();
+	constructor(login) {
+		this.binanceHandler = new BinanceHandler(login);
+		this.gdaxHandler = new GdaxHandler(login);
+		this.coinbasehandler = new CoinbaseHandler(login);
 	}
 
 	process() {

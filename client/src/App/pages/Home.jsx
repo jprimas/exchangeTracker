@@ -18,7 +18,7 @@ class Home extends Component {
 
   getProcessedPurse = () => {
     fetch('/api/processPurse')
-    .then(res => res.json())
+    .then( res => res.json())
     .then(purse => this.setState({ purse }))
   }
 

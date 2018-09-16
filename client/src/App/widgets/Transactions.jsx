@@ -6,7 +6,7 @@ class Transactions extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      transactions: null
+      transactions: []
     }
   }
 
@@ -23,7 +23,7 @@ class Transactions extends Component {
   render() {
     const { transactions } = this.state;
     let transactionList = [];
-    if (transactions) {
+    if (transactions && transactions.length > 0) {
     	transactionList = transactions.map(function(trx){
 	    	return <Transaction trx={trx}/>;
 	    });

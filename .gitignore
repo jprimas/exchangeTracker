@@ -74,3 +74,6 @@ typings/
 
 # misc
 .DS_Store
+
+#Databse
+*.db

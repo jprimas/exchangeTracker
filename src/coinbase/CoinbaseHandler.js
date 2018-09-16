@@ -5,10 +5,10 @@ require('dotenv').config();
 
 class CoinbaseHandler {
 
-	constructor() {
+	constructor(login) {
 		this.coinbase = Promise.promisifyAll(CoinbaseClient({
-			'apiKey': process.env.COINBASE_TEST_API_KEY,
-			'apiSecret': process.env.COINBASE_TEST_API_SECRET
+			'apiKey': login.coinbase_api_key,
+			'apiSecret': login.coinbase_api_secret
 		}));
 	}
 

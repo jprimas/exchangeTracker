@@ -1,38 +1,105 @@
 const express = require('express');
 const path = require('path');
-const TransactionProcessor = require('./src/helpers/TransactionProcessor')
+const bodyParser = require('body-parser');
+const session = require('express-session');
+const TransactionProcessor = require('./src/helpers/TransactionProcessor');
+const AppDao = require('./src/daos/AppDao');
+const LoginDao = require('./src/daos/LoginDao');
+require('dotenv').config();  
 
 const app = express();
-
+//Setup DB
+const dao = new AppDao('./data.db');
+const loginDao = new LoginDao(dao);
 // Serve the static files from the React app
 app.use(express.static(path.join(__dirname, 'client/build')));
+//Setup Session
+var jsonParser = bodyParser.json();
+var urlencodedParser = bodyParser.urlencoded({ extended: false });
+app.use(session({
+	secret: process.env.SESSION_SECRET,
+	resave: false,
+	saveUninitialized: false
+}));
 
-app.get('/api/processPurse', (req,res) => {
-	let transactionProcessor = new TransactionProcessor();
+
+//START MIDDLEWARE
+
+let requiresLogin = function (req, res, next) {
+	console.log(req.session);
+	if (req.session && req.session.loginId) {
+		loginDao.getById(req.session.loginId).then( login => {
+			if (!login) {
+				return res.json({
+					hasError: true,
+					error: "No email was provided"
+				});
+			}
+			req.login = login;
+			next();
+		}).catch( err => {
+			return res.json({
+				hasError: true,
+				error: "No email was provided"
+			});
+		});
+	} else {
+		res.json({
+			hasError: true,
+			error: "No email was provided"
+		});
+	}
+}
+
+//END MIDDLEWARE
+
+
+app.get('/api/authenticate', (req, res) => {
+	if (!req || !req.query || !req.query.email) {
+		return res.json({
+			hasError: true,
+			error: "No email was provided5"
+		});
+	}
+
+	let userEmail = req.query.email;
+	return loginDao.getByEmail(userEmail).then( login => {
+		if (!login) {
+			return loginDao.create(userEmail, "a", "b", "c", "d", "e", "f", "g").then( newLogin =>{
+				req.session.loginId = newLogin.id;
+				return res.json();
+			})
+		} else {
+			req.session.loginId = login.id;
+			return res.json();
+		}
+	});
+});
+
+app.get('/api/secure/processPurse', [requiresLogin], (req,res) => {
+	let transactionProcessor = new TransactionProcessor(req.login);
 	return transactionProcessor.process()
 	.then( result => {
-		console.log(result)
 		return res.json(result) 
 	})
 	.catch( error => {
 		console.log(error);
-		res.json({
+		return res.json({
 			hasError: true,
 			error: "Something went wrong"
 		});
 	});
 });
 
-app.get('/api/getTransactions', (req,res) => {
-	let transactionProcessor = new TransactionProcessor();
+app.get('/api/secure/getTransactions', [requiresLogin], (req,res) => {
+	let transactionProcessor = new TransactionProcessor(req.login);
 	return transactionProcessor.getAllTransactions()
 	.then( result => {
-		console.log(result)
 		return res.json(result) 
 	})
 	.catch( error => {
 		console.log(error);
-		res.json({
+		return res.json({
 			hasError: true,
 			error: "Something went wrong"
 		});

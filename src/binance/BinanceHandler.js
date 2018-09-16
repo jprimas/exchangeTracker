@@ -7,10 +7,10 @@ require('dotenv').config();
 
 class BinanceHandler {
 
-	constructor() {
+	constructor(login) {
 		this.binance = Promise.promisifyAll(new Binance().options({
-			APIKEY: process.env.BINANCE_TEST_API_KEY,
-			APISECRET: process.env.BINANCE_TEST_API_SECRET,
+			APIKEY: login.binance_api_key,
+			APISECRET: login.binance_api_secret,
 			useServerTime: true,
 			test: true
 		}));
