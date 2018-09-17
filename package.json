@@ -20,6 +20,7 @@
     "express-session": "^1.15.6",
     "gdax": "^0.8.0",
     "node-binance-api": "^0.8.1",
+    "sequelize": "^4.38.1",
     "sqlite3": "^4.0.2"
   }
 }
