@@ -10,9 +10,9 @@ class GdaxHandler {
 
 	constructor(login) {
 		this.gdax = new Gdax.AuthenticatedClient(
-			login.gdax_api_key,
-			login.gdax_api_secret,
-			login.gdax_api_passphrase,
+			login.gdaxApiKey,
+			login.gdaxApiSecret,
+			login.gdaxApiPassphrase,
 			GDAX_API_URL
 		);
 	}

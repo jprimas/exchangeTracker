@@ -3,8 +3,9 @@ const BinanceHandler = require('../binance/BinanceHandler');
 const GdaxHandler = require('../coinbase/GdaxHandler')
 const CoinbaseHandler = require('../coinbase/CoinbaseHandler')
 const {CommonUtil, TransactionTypes} = require('../utils/CommonUtil');
-const Purse = require('../utils/Purse');
+const PurseHelper = require('../utils/PurseHelper');
 const CryptoCompareApi = require('../utils/CryptoCompareApi');
+const models = require('../models');
 
 
 class TransactionProcessor {
@@ -13,37 +14,74 @@ class TransactionProcessor {
 		this.binanceHandler = new BinanceHandler(login);
 		this.gdaxHandler = new GdaxHandler(login);
 		this.coinbasehandler = new CoinbaseHandler(login);
+		this.login = login;
 	}
 
 	process() {
-		return this.getAllTransactions().then( (trxs) => {
-			//console.log(trxs);
-			let promiseArr = [];
-			let purse = new Purse();
-			for (let i = 0; i < trxs.length; i++) {
-				let trx = trxs[i];
-				switch (trx.type) {
-					case TransactionTypes.DEPOSIT:
-						// Currently means depositing USD
-						let x = purse.handleDeposit(trx);
-						promiseArr = promiseArr.concat(x);
-						break;
-					case TransactionTypes.WITHDRAW:
-						// Currently means withdrawing USD
-						promiseArr = promiseArr.concat(purse.handleWithdrawal(trx));
-						break;
-					case TransactionTypes.TRADE:
-						promiseArr = promiseArr.concat(purse.handleTrade(trx));
-						break;
-				}
-			}
+		return Promise.join(
+			this.getAllTransactions(),
+			this.getPurse(),
+			(trxs, purse) => {
+				let promiseArr = [];
+				return purse.getCoins().then( coins => {
+					let coinsMap = {};
+					for (let i = 0; i < coins.length; i++) {
+						let coin = coins[i];
+						coinsMap[coin.symbol] = coin;
+					}
+					let purseHelper = new PurseHelper(purse, coinsMap);
+					for (let i = 0; i < trxs.length; i++) {
+						let trx = trxs[i];
 
-			return Promise.all(promiseArr).then( () => {
-				return purse.postProcessPurse().then( () => {
-					return purse.getPurse();
-				});	
-			})
-		})
+						// Skip transactions that were already processed
+						if (purse.lastTrxDate && trx.timestamp <= purse.lastTrxDate) {
+							continue;
+						}
+
+						switch (trx.type) {
+							case TransactionTypes.DEPOSIT:
+								// Currently means depositing USD
+								promiseArr = promiseArr.concat(purseHelper.handleDeposit(trx));
+								break;
+							case TransactionTypes.WITHDRAW:
+								// Currently means withdrawing USD
+								promiseArr = promiseArr.concat(purseHelper.handleWithdrawal(trx));
+								break;
+							case TransactionTypes.TRADE:
+								promiseArr = promiseArr.concat(purseHelper.handleTrade(trx));
+								break;
+						}
+					}
+
+					return Promise.all(promiseArr).then( () => {
+						return purseHelper.postProcessPurse().then( (result) => {
+							console.log(result);
+							return result;
+						});	
+					});
+				})
+			}
+		);
+	}
+
+	getPurse() {
+		return models.Purse.findOne({
+		    where: {loginId: this.login.id},
+		    include: [models.Coin]
+		}).then( purse => {
+			if (!purse) {
+				return models.Purse.build({
+					loginId: this.login.id,
+					totalFees: 0,
+					totalUsdInvested: 0,
+					coins: []
+				}, {
+				  include: [ models.Coin ]
+				});
+			} else {
+				return purse;
+			}
+		});
 	}
 
 	getAllTransactions() {

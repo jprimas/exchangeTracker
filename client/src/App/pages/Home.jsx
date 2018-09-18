@@ -51,7 +51,7 @@ class Home extends Component {
                 {"Total Percentage Gains in USD => " + purse.totalPercentageGainInUsd + "%"}
               </div>
               <div>
-                {"Total Fees Paid => $" + purse.totalFeesInUsd}
+                {"Total Fees Paid => $" + purse.totalFees}
               </div>
             </div>
           ) : (

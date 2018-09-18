@@ -3,14 +3,12 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const TransactionProcessor = require('./src/helpers/TransactionProcessor');
-const AppDao = require('./src/daos/AppDao');
-const LoginDao = require('./src/daos/LoginDao');
+const models = require('./src/models');
 require('dotenv').config();  
 
 const app = express();
 //Setup DB
-const dao = new AppDao('./data.db');
-const loginDao = new LoginDao(dao);
+
 // Serve the static files from the React app
 app.use(express.static(path.join(__dirname, 'client/build')));
 //Setup Session
@@ -28,7 +26,7 @@ app.use(session({
 let requiresLogin = function (req, res, next) {
 	console.log(req.session);
 	if (req.session && req.session.loginId) {
-		loginDao.getById(req.session.loginId).then( login => {
+		models.Login.findById(req.session.loginId).then( login => {
 			if (!login) {
 				return res.json({
 					hasError: true,
@@ -61,11 +59,14 @@ app.get('/api/authenticate', (req, res) => {
 			error: "No email was provided5"
 		});
 	}
-
 	let userEmail = req.query.email;
-	return loginDao.getByEmail(userEmail).then( login => {
+	return models.Login.findOne({
+	    where: {email: userEmail}
+	}).then( login => {
 		if (!login) {
-			return loginDao.create(userEmail, "a", "b", "c", "d", "e", "f", "g").then( newLogin =>{
+			return models.Login.create({
+				email: userEmail
+			}).then( newLogin =>{
 				req.session.loginId = newLogin.id;
 				return res.json();
 			})

@@ -9,8 +9,8 @@ class BinanceHandler {
 
 	constructor(login) {
 		this.binance = Promise.promisifyAll(new Binance().options({
-			APIKEY: login.binance_api_key,
-			APISECRET: login.binance_api_secret,
+			APIKEY: login.binanceApiKey,
+			APISECRET: login.binanceApiSecret,
 			useServerTime: true,
 			test: true
 		}));

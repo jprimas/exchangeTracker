@@ -7,8 +7,8 @@ class CoinbaseHandler {
 
 	constructor(login) {
 		this.coinbase = Promise.promisifyAll(CoinbaseClient({
-			'apiKey': login.coinbase_api_key,
-			'apiSecret': login.coinbase_api_secret
+			'apiKey': login.coinbaseApiKey,
+			'apiSecret': login.coinbaseApiSecret
 		}));
 	}
 
