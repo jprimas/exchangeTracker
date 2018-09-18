@@ -10,5 +10,16 @@ module.exports = (sequelize, DataTypes) => {
     // associations can be defined here
     models.Coin.belongsTo(models.Purse);
   };
+
+  //Instance Methods
+  Coin.prototype.getDto = function() {
+    return {
+      symbol: this.symbol,
+      amount: this.amount,
+      totalPurchasePrice: this.totalPurchasePrice
+    }
+  }
+
+
   return Coin;
 };

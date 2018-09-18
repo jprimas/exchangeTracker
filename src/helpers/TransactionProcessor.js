@@ -22,14 +22,9 @@ class TransactionProcessor {
 			this.getAllTransactions(),
 			this.getPurse(),
 			(trxs, purse) => {
-				let promiseArr = [];
-				return purse.getCoins().then( coins => {
-					let coinsMap = {};
-					for (let i = 0; i < coins.length; i++) {
-						let coin = coins[i];
-						coinsMap[coin.symbol] = coin;
-					}
-					let purseHelper = new PurseHelper(purse, coinsMap);
+				return purse.getCoinMap().then( coinMap => {
+					let purseHelper = new PurseHelper(purse, coinMap);
+					let promiseArr = [];
 					for (let i = 0; i < trxs.length; i++) {
 						let trx = trxs[i];
 

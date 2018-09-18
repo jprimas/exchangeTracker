@@ -90,8 +90,7 @@ class PurseHelper {
 	postProcessPurse() {
 		//Update lastTrxDate
 		this.purse.lastTrxDate = this.lastTrxDate;
-		let result = this.purse.get();
-		delete result.Coins;
+		let result = this.purse.getDto();
 		return this._postProcessCoins().spread( (coins, totalCurrentValueInUsd) => {
 			this._persistPurseAndCoins();
 			result.totalCurrentValueInUsd = totalCurrentValueInUsd;
@@ -107,7 +106,7 @@ class PurseHelper {
 		return Promise.map(Object.keys(this.coinsMap), (symbol) => {
 			return CryptoCompareApi.getCurrentPriceInUsd(symbol)
 			.then( currentPrice => {
-				let coin = this.coinsMap[symbol].get();
+				let coin = this.coinsMap[symbol].getDto();
 				let currentValueInUsd = currentPrice * this.coinsMap[symbol].amount;
 				totalCurrentValue += currentPrice * this.coinsMap[symbol].amount;
 				coin.percentageGainInUsd = CommonUtil.formatAsPercentage(currentValueInUsd / this.coinsMap[symbol].totalPurchasePrice);
