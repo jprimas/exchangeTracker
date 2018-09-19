@@ -1,0 +1,50 @@
+.Registration {
+	background: #bbeced;
+	height: 100vh;
+}
+
+.Registration .header{
+	height: 50px;
+}
+
+.Registration .footer{
+	height: 100px;
+}
+
+.Registration h1 {
+	text-align: center;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #bbeced;
+}
+
+.Registration .registrationBox {
+	width: 500px;
+	background: white;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.Registration .registrationBox .form-group {
+	width: 400px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.Registration .actions {
+	margin-right: 50px;
+	display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.Registration .actions button {
+	margin-bottom: 15px;
+}
+
+.Registration .actions a {
+	height: 34px;
+    margin-right: 15px;
+    text-decoration: none;
+    cursor: pointer;
+}

@@ -1,7 +1,9 @@
 const express = require('express');
+const Promise = require('bluebird');
 const path = require('path');
 const bodyParser = require('body-parser');
 const session = require('express-session');
+const bcrypt = Promise.promisifyAll(require('bcrypt'));
 const TransactionProcessor = require('./src/helpers/TransactionProcessor');
 const models = require('./src/models');
 require('dotenv').config();  
@@ -52,29 +54,86 @@ let requiresLogin = function (req, res, next) {
 //END MIDDLEWARE
 
 
-app.get('/api/authenticate', (req, res) => {
-	if (!req || !req.query || !req.query.email) {
+app.post('/api/authenticate', [jsonParser], (req, res) => {
+	if (!req || !req.body) {
 		return res.json({
 			hasError: true,
-			error: "No email was provided5"
+			error: "Invalid username or password"
 		});
 	}
-	let userEmail = req.query.email;
+	let userEmail = req.body.email;
+	let userPassword = req.body.password;
 	return models.Login.findOne({
 	    where: {email: userEmail}
 	}).then( login => {
 		if (!login) {
-			return models.Login.create({
-				email: userEmail
-			}).then( newLogin =>{
-				req.session.loginId = newLogin.id;
-				return res.json();
-			})
+			return res.json({
+				hasError: true,
+				error: "Invalid username or password"
+			});
 		} else {
-			req.session.loginId = login.id;
-			return res.json();
+			bcrypt.compareAsync(userPassword, login.password)
+			.then( (result) => {
+				req.session.loginId = login.id;
+				return res.sendStatus(200);
+			})
+			.catch( (err) => {
+				return res.json({
+					hasError: true,
+					error: "Invalid username or password"
+				});
+			})
 		}
 	});
+});
+
+app.post('/api/register', [jsonParser], (req, res) => {
+	if (!req || !req.body) {
+		return res.json({
+			hasError: true,
+			error: "No request body"
+		});
+	}
+
+	if (!req.body.email) {
+		return res.json({
+			hasError: true,
+			error: "No Email Provided"
+		});
+	}
+
+	if (!req.body.password || !req.body.confirmPassword || req.body.password != req.body.confirmPassword ) {
+		return res.json({
+			hasError: true,
+			error: "Password Error"
+		});
+	}
+
+	//TODO: Check if an email already exists
+
+	return bcrypt.hashAsync(req.body.password, 10)
+	.then( (hash) => {
+		return models.Login.create({
+			email: req.body.email,
+			password: hash,
+			binanceApiKey: req.body.binanceApiKey,
+			binanceApiSecret: req.body.binanceApiSecret,
+			gdaxApiKey: req.body.gdaxApiKey,
+			gdaxApiSecret: req.body.gdaxApiSecret,
+			gdaxApiPassphrase: req.body.gdaxApiPassphrase,
+			coinbaseApiKey: req.body.coinbaseApiKey,
+			coinbaseApiSecret: req.body.coinbaseApiSecret
+		})
+		.then( (login) => {
+			req.session.loginId = login.id;
+			return res.sendStatus(200);
+		}).catch( () => {
+			return res.json({
+				hasError: true,
+				error: "Unable to save to DB"
+			});
+		});
+	});	
 });
 
 app.get('/api/secure/processPurse', [requiresLogin], (req,res) => {
