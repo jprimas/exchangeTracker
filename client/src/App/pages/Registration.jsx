@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 import { FormGroup, FormControl, ControlLabel, Button} from 'react-bootstrap';
 import axios from 'axios';
 import './css/registration.css';
@@ -10,6 +11,7 @@ class Registration extends Component {
     super(props);
     this.state = {
       flowIndex: 0,
+      error: null,
       email: "",
       password: "",
       confirmPassword: "",
@@ -73,7 +75,14 @@ class Registration extends Component {
         gdaxApiSecret: this.state.gdaxApiSecret,
         gdaxApiPassphrase: this.state.gdaxApiPassphrase,
         coinbaseApiKey: this.state.coinbaseApiKey,
-        coinbaseApiSecret: this.state.coinbaseApiSecret,
+        coinbaseApiSecret: this.state.coinbaseApiSecret
+      }).then( result => {
+        if (result.hasError) {
+          this.setState({ error: result.error });
+        } else {
+          this.setState({ error: null });
+          this.props.history.push('/');
+        }
       });
     } else {
       this.setState({flowIndex: this.state.flowIndex+1});
