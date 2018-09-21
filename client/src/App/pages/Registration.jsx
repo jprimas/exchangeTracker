@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { FormGroup, FormControl, ControlLabel, Button} from 'react-bootstrap';
 import axios from 'axios';
-import './css/registration.css';
+import './css/login.css';
 
 
 class Registration extends Component {
@@ -12,6 +12,7 @@ class Registration extends Component {
     this.state = {
       flowIndex: 0,
       error: null,
+      runValidation: false,
       email: "",
       password: "",
       confirmPassword: "",
@@ -21,7 +22,7 @@ class Registration extends Component {
       gdaxApiSecret: "",
       gdaxApiPassphrase: "",
       coinbaseApiKey: "",
-      coinbaseApiSecret: ""
+      coinbaseApiSecret: "",
     }
   }
 
@@ -64,6 +65,14 @@ class Registration extends Component {
   }
 
   handleSubmit = (event) => {
+    event.preventDefault();
+    if (!this._validate()) {
+      this.setState({runValidation: true});
+      return;
+    } else {
+      this.setState({runValidation: false});
+    }
+
     if (this.state.flowIndex === 3) {
       axios.post('/api/register', {
         email: this.state.email,
@@ -77,22 +86,119 @@ class Registration extends Component {
         coinbaseApiKey: this.state.coinbaseApiKey,
         coinbaseApiSecret: this.state.coinbaseApiSecret
       }).then( result => {
-        if (result.hasError) {
-          this.setState({ error: result.error });
+        if (!result.data || result.data.hasError) {
+          this.setState({ error: result.data.error });
         } else {
-          this.setState({ error: null });
           this.props.history.push('/');
         }
       });
     } else {
-      this.setState({flowIndex: this.state.flowIndex+1});
+      this.setState({
+        flowIndex: this.state.flowIndex+1
+      });
     }
-    event.preventDefault();
   }
 
   handleBackClick = (event) => {
     if (this.state.flowIndex > 0) {
-      this.setState({flowIndex: this.state.flowIndex-1});
+      this.setState({
+        flowIndex: this.state.flowIndex-1
+      });
+    }
+  }
+
+  getValidationState = (obj) => {
+    if (!this.state.runValidation) {
+      return null;
+    }
+    switch (obj) {
+      case 'emailInput':
+        if (!this.state.email) return "error";
+        break;
+      case 'passwordInput':
+        if (!this.state.password) return "error";
+        break;
+      case 'confirmPasswordInput':
+        if (!this.state.confirmPassword || this.state.password !== this.state.confirmPassword) return "error";
+        break;
+      case 'binanceApiKeyInput':
+        if (!this.state.binanceApiKey) return "error";
+        break;
+      case 'binanceApiSecretInput':
+        if (!this.state.binanceApiSecret) return "error";
+        break;
+      case 'gdaxApiKeyInput':
+        if (!this.state.gdaxApiKey) return "error";
+        break;
+      case 'gdaxApiSecretInput':
+        if (!this.state.gdaxApiSecret) return "error";
+        break;
+      case 'gdaxApiPassphraseInput':
+        if (!this.state.gdaxApiPassphrase) return "error";
+        break;
+      case 'coinbaseApiKeyInput':
+        if (!this.state.coinbaseApiKey) return "error";
+        break;
+      case 'coinbaseApiSecretInput':
+        if (!this.state.coinbaseApiSecret) return "error";
+        break;
+      default:
+        return "error";
+    }
+
+    return null;
+  }
+
+  _validate = () => {
+    if (this.state.flowIndex === 0) {
+      if (!this.state.email) {
+        this.setState({error: "Invalid Email"});
+        return false
+      }
+      
+      if (!this.state.password ||
+        !this.state.confirmPassword ||
+        this.state.password !== this.state.confirmPassword) {
+        this.setState({error: "Invalid Password"});
+        return false;
+      }
+    }
+
+    if (this.state.flowIndex === 1 &&
+      (!this.state.binanceApiKey ||
+        !this.state.binanceApiSecret)) {
+      this.setState({error: "Missing key information"});
+      return false;
+    }
+
+    if (this.state.flowIndex === 2 &&
+      (!this.state.gdaxApiKey ||
+        !this.state.gdaxApiSecret ||
+        !this.state.gdaxApiPassphrase)) {
+        this.setState({error: "Missing key information"});
+        return false;
+    }
+
+    if (this.state.flowIndex === 3 &&
+      (!this.state.coinbaseApiKey ||
+        !this.state.coinbaseApiSecret)) {
+        this.setState({error: "Missing key information"});
+        return false;
+    }
+    this.setState({error: null});
+    return true;
+  }
+
+  _renderSubtext = () => {
+    switch (this.state.flowIndex) {
+      case 1:
+        return (<span>Connect your Binance account. Please provide a <b>read-only</b> API key for your account. This means the key should only have <b>Read Info</b> permissions, make sure to disable <i>Enable Trading</i>.</span>);
+      case 2:
+        return (<span>Connect your GDAX account. Please provide a <b>read-only</b> API key for your account. This means the key should only have <b>View</b> permissions.</span>);
+      case 3:
+        return (<span>Connect your Coinbase account. Please provide a <b>read-only</b> API key for your account. Make sure that the key can access all accounts and all <b>"*:*:read"</b> permissions are enabled.</span>);
+      default:
+        return ("Welcome to Exchange Tracker.");
     }
   }
 
@@ -110,164 +216,161 @@ class Registration extends Component {
 
   _renderLoginPage = () => {
     return (
-      <div className="registrationBox">
-        <h1> Register </h1>
-        <form onSubmit={this.handleSubmit}>
-          <FormGroup controlId="emailInput">
-            <ControlLabel>Email</ControlLabel>
-            <FormControl
-              type="email"
-              name="emailInput"
-              placeholder="Email"
-              value={this.state.email}
-              onChange={this.handleChange}
-            />
-          </FormGroup>
+      <form onSubmit={this.handleSubmit}>
+        <FormGroup controlId="emailInput" validationState={this.getValidationState("emailInput")} >
+          <ControlLabel>Email</ControlLabel>
+          <FormControl
+            type="email"
+            name="emailInput"
+            placeholder="Email"
+            value={this.state.email}
+            onChange={this.handleChange}
+          />
+        </FormGroup>
 
-          <FormGroup controlId="passwordInput">
-            <ControlLabel>Password</ControlLabel>
-            <FormControl
-              type="password"
-              name="passwordInput"
-              placeholder="Password"
-              value={this.state.password}
-              onChange={this.handleChange}
-            />
-          </FormGroup>
+        <FormGroup controlId="passwordInput" validationState={this.getValidationState("passwordInput")}>
+          <ControlLabel>Password</ControlLabel>
+          <FormControl
+            type="password"
+            name="passwordInput"
+            placeholder="Password"
+            value={this.state.password}
+            onChange={this.handleChange}
+          />
+        </FormGroup>
 
-          <FormGroup controlId="confirmPasswordInput">
-            <ControlLabel>Confirm Password</ControlLabel>
-            <FormControl
-              type="password"
-              name="confirmPasswordInput"
-              placeholder="Confirm Password"
-              value={this.state.confirmPassword}
-              onChange={this.handleChange}
-            />
-          </FormGroup>
-          <div className="actions">
-            <Button type="submit">Next</Button>
-          </div>
-        </form>
-      </div>
+        <FormGroup controlId="confirmPasswordInput" validationState={this.getValidationState("confirmPasswordInput")}>
+          <ControlLabel>Confirm Password</ControlLabel>
+          <FormControl
+            type="password"
+            name="confirmPasswordInput"
+            placeholder="Confirm Password"
+            value={this.state.confirmPassword}
+            onChange={this.handleChange}
+          />
+        </FormGroup>
+        <div className="actions">
+          <Button type="submit">Next</Button>
+        </div>
+      </form>
     )
   }
 
   _renderBinancePage = () => {
     return (
-      <div className="registrationBox">
-        <h1> Register </h1>
-        <form onSubmit={this.handleSubmit}>
-          <FormGroup controlId="binanceApiKeyInput">
-            <ControlLabel>Binance Api Key</ControlLabel>
-            <FormControl
-              type="text"
-              name="binanceApiKeyInput"
-              value={this.state.binanceApiKey}
-              onChange={this.handleChange}
-            />
-          </FormGroup>
+      <form onSubmit={this.handleSubmit}>
+        <FormGroup controlId="binanceApiKeyInput" validationState={this.getValidationState("binanceApiKeyInput")}>
+          <ControlLabel>Binance Api Key</ControlLabel>
+          <FormControl
+            type="text"
+            name="binanceApiKeyInput"
+            value={this.state.binanceApiKey}
+            onChange={this.handleChange}
+          />
+        </FormGroup>
 
-          <FormGroup controlId="binanceApiSecretInput">
-            <ControlLabel>Binance Api Secret</ControlLabel>
-            <FormControl
-              type="text"
-              name="binanceApiSecretInput"
-              value={this.state.binanceApiSecret}
-              onChange={this.handleChange}
-            />
-          </FormGroup>
-          <div className="actions">
-            <a onClick={this.handleBackClick}>Back</a>
-            <Button type="submit">Next</Button>
-          </div>
-        </form>
-      </div>
+        <FormGroup controlId="binanceApiSecretInput" validationState={this.getValidationState("binanceApiSecretInput")}>
+          <ControlLabel>Binance Api Secret</ControlLabel>
+          <FormControl
+            type="text"
+            name="binanceApiSecretInput"
+            value={this.state.binanceApiSecret}
+            onChange={this.handleChange}
+          />
+        </FormGroup>
+        <div className="actions">
+          <a onClick={this.handleBackClick}>Back</a>
+          <Button type="submit">Next</Button>
+        </div>
+      </form>
     )
   }
 
   _renderGdaxPage = () => {
     return (
-      <div className="registrationBox">
-        <h1> Register </h1>
-        <form onSubmit={this.handleSubmit}>
-          <FormGroup controlId="gdaxApiKeyInput">
-            <ControlLabel>GDAX Api Key</ControlLabel>
-            <FormControl
-              type="text"
-              name="gdaxApiKeyInput"
-              value={this.state.gdaxApiKey}
-              onChange={this.handleChange}
-            />
-          </FormGroup>
+      <form onSubmit={this.handleSubmit}>
+        <FormGroup controlId="gdaxApiKeyInput" validationState={this.getValidationState("gdaxApiKeyInput")}>
+          <ControlLabel>GDAX Api Key</ControlLabel>
+          <FormControl
+            type="text"
+            name="gdaxApiKeyInput"
+            value={this.state.gdaxApiKey}
+            onChange={this.handleChange}
+          />
+        </FormGroup>
 
-          <FormGroup controlId="gdaxApiSecretInput">
-            <ControlLabel>GDAX Api Secret</ControlLabel>
-            <FormControl
-              type="text"
-              name="gdaxApiSecretInput"
-              value={this.state.gdaxApiSecret}
-              onChange={this.handleChange}
-            />
-          </FormGroup>
+        <FormGroup controlId="gdaxApiSecretInput" validationState={this.getValidationState("gdaxApiSecretInput")}>
+          <ControlLabel>GDAX Api Secret</ControlLabel>
+          <FormControl
+            type="text"
+            name="gdaxApiSecretInput"
+            value={this.state.gdaxApiSecret}
+            onChange={this.handleChange}
+          />
+        </FormGroup>
 
-          <FormGroup controlId="gdaxApiPassphraseInput">
-            <ControlLabel>GDAX Api Passphrase</ControlLabel>
-            <FormControl
-              type="text"
-              name="gdaxApiPassphraseInput"
-              value={this.state.gdaxApiPassphrase}
-              onChange={this.handleChange}
-            />
-          </FormGroup>
-          <div className="actions">
-            <a onClick={this.handleBackClick}>Back</a>
-            <Button type="submit">Next</Button>
-          </div>
-        </form>
-      </div>
+        <FormGroup controlId="gdaxApiPassphraseInput" validationState={this.getValidationState("gdaxApiPassphraseInput")}>
+          <ControlLabel>GDAX Api Passphrase</ControlLabel>
+          <FormControl
+            type="text"
+            name="gdaxApiPassphraseInput"
+            value={this.state.gdaxApiPassphrase}
+            onChange={this.handleChange}
+          />
+        </FormGroup>
+        <div className="actions">
+          <a onClick={this.handleBackClick}>Back</a>
+          <Button type="submit">Next</Button>
+        </div>
+      </form>
     )
   }
 
   _renderCoinbasePage = () => {
     return (
-      <div className="registrationBox">
-        <h1> Register </h1>
-        <form onSubmit={this.handleSubmit}>
-          <FormGroup controlId="coinbaseApiKeyInput">
-            <ControlLabel>Coinbase Api Key</ControlLabel>
-            <FormControl
-              type="text"
-              name="coinbaseApiKeyInput"
-              value={this.state.coinbaseApiKey}
-              onChange={this.handleChange}
-            />
-          </FormGroup>
+      <form onSubmit={this.handleSubmit}>
+        <FormGroup controlId="coinbaseApiKeyInput" validationState={this.getValidationState("coinbaseApiKeyInput")}>
+          <ControlLabel>Coinbase Api Key</ControlLabel>
+          <FormControl
+            type="text"
+            name="coinbaseApiKeyInput"
+            value={this.state.coinbaseApiKey}
+            onChange={this.handleChange}
+          />
+        </FormGroup>
 
-          <FormGroup controlId="coinbaseApiSecretInput">
-            <ControlLabel>Coinbase Api Secret</ControlLabel>
-            <FormControl
-              type="text"
-              name="coinbaseApiSecretInput"
-              value={this.state.coinbaseApiSecret}
-              onChange={this.handleChange}
-            />
-          </FormGroup>
-          <div className="actions">
-            <a onClick={this.handleBackClick}>Back</a>
-            <Button type="submit">Register</Button>
-          </div>
-        </form>
-      </div>
+        <FormGroup controlId="coinbaseApiSecretInput" validationState={this.getValidationState("coinbaseApiSecretInput")}>
+          <ControlLabel>Coinbase Api Secret</ControlLabel>
+          <FormControl
+            type="text"
+            name="coinbaseApiSecretInput"
+            value={this.state.coinbaseApiSecret}
+            onChange={this.handleChange}
+          />
+        </FormGroup>
+        <div className="actions">
+          <a onClick={this.handleBackClick}>Back</a>
+          <Button type="submit">Register</Button>
+        </div>
+      </form>
     )
   }
 
 
   render() {
     return (
-      <div className="Registration">
+      <div className="Login">
         <div className="header"></div>
-        {this._renderRegistrationPage()}
+          <div className="loginBox">
+            <h1> Register </h1>
+            <div className="subtext">
+              {this._renderSubtext()}
+            </div>
+            <div className="error">
+              {this.state.error}
+            </div>
+            {this._renderRegistrationPage()}
+          </div>
         <div className="footer"></div>
       </div>
     );

@@ -3,7 +3,6 @@ const express = require('express');
 const router = express.Router();
 const bodyParser = require('body-parser');
 const bcrypt = Promise.promisifyAll(require('bcrypt'));
-
 const models = require('../models');
 const { requiresLogin } = require('./middleware');
 
@@ -11,7 +10,8 @@ var jsonParser = bodyParser.json();
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
  router.post('/api/authenticate', [jsonParser], (req, res) => {
-	if (!req || !req.body) {
+ 	// Check if we have an email and password
+	if (!req || !req.body || !req.body.email || !req.body.password) {
 		return res.json({
 			hasError: true,
 			error: "Invalid username or password"
@@ -22,12 +22,14 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false });
 	return models.Login.findOne({
 	    where: {email: userEmail}
 	}).then( login => {
+		// Check if we have a login for the email
 		if (!login) {
 			return res.json({
 				hasError: true,
 				error: "Invalid username or password"
 			});
 		} else {
+			// Check if the passwords match
 			bcrypt.compareAsync(userPassword, login.password)
 			.then( (validated) => {
 				if (validated) {
@@ -39,13 +41,7 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false });
 						error: "Invalid username or password"
 					});
 				}
-			})
-			.catch( (err) => {
-				return res.json({
-					hasError: true,
-					error: "Invalid username or password"
-				});
-			})
+			});
 		}
 	});
 });
@@ -59,49 +55,61 @@ router.post('/api/register', [jsonParser], (req, res) => {
 	if (!req || !req.body) {
 		return res.json({
 			hasError: true,
-			error: "No request body"
+			error: "User creation failure"
 		});
 	}
 
+	// User enter an email
 	if (!req.body.email) {
 		return res.json({
 			hasError: true,
-			error: "No Email Provided"
+			error: "Missing Email"
 		});
 	}
 
+	//User entered a valid password
 	if (!req.body.password || !req.body.confirmPassword || req.body.password != req.body.confirmPassword ) {
 		return res.json({
 			hasError: true,
-			error: "Password Error"
+			error: "Missing or Mismatched Email"
 		});
 	}
 
-	//TODO: Check if an email already exists
-
-	return bcrypt.hashAsync(req.body.password, 10)
-	.then( (hash) => {
-		return models.Login.create({
-			email: req.body.email,
-			password: hash,
-			binanceApiKey: req.body.binanceApiKey,
-			binanceApiSecret: req.body.binanceApiSecret,
-			gdaxApiKey: req.body.gdaxApiKey,
-			gdaxApiSecret: req.body.gdaxApiSecret,
-			gdaxApiPassphrase: req.body.gdaxApiPassphrase,
-			coinbaseApiKey: req.body.coinbaseApiKey,
-			coinbaseApiSecret: req.body.coinbaseApiSecret
-		})
-		.then( (login) => {
-			req.session.loginId = login.id;
-			return res.sendStatus(200);
-		}).catch( () => {
+	// Check if the email already exists
+	return models.Login.findOne({ where: {email: req.body.email} })
+	.then( login => {
+		if (login) {
 			return res.json({
 				hasError: true,
-				error: "Unable to save to DB"
+				error: "Account already exists for: " + req.body.email
 			});
-		});
-	});	
+		}
+
+		// Hash the password
+		return bcrypt.hashAsync(req.body.password, 10)
+		.then( (hash) => {
+			return models.Login.create({
+				email: req.body.email,
+				password: hash,
+				binanceApiKey: req.body.binanceApiKey,
+				binanceApiSecret: req.body.binanceApiSecret,
+				gdaxApiKey: req.body.gdaxApiKey,
+				gdaxApiSecret: req.body.gdaxApiSecret,
+				gdaxApiPassphrase: req.body.gdaxApiPassphrase,
+				coinbaseApiKey: req.body.coinbaseApiKey,
+				coinbaseApiSecret: req.body.coinbaseApiSecret
+			})
+			.then( (login) => {
+				req.session.loginId = login.id;
+				return res.sendStatus(200);
+			}).catch( () => {
+				return res.json({
+					hasError: true,
+					error: "Unable to save to DB"
+				});
+			});
+		});	
+	});
 });
 
 module.exports = router;

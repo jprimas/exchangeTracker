@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { FormGroup, FormControl, ControlLabel, Button} from 'react-bootstrap';
 import axios from 'axios';
-import './css/registration.css';
+import './css/login.css';
 
 
 class Login extends Component {
@@ -36,7 +36,7 @@ class Login extends Component {
       email: this.state.email,
       password: this.state.password,
     }).then( result => {
-      if (result.hasError) {
+      if (!result.data || result.data.hasError) {
         this.setState({ error: "Incorrect username or password" });
       } else {
         this.setState({ error: null });
@@ -47,10 +47,13 @@ class Login extends Component {
 
   render() {
     return (
-      <div className="Registration">
+      <div className="Login">
         <div className="header"></div>
-          <div className="registrationBox">
-            <h1> Register </h1>
+          <div className="loginBox">
+            <h1> Login </h1>
+            <div className="error">
+              {this.state.error}
+            </div>
             <form onSubmit={this.handleSubmit}>
               <FormGroup controlId="emailInput">
                 <ControlLabel>Email</ControlLabel>
