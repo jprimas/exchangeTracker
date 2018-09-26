@@ -10,8 +10,6 @@ const { requiresLogin } = require('./src/routes/middleware');
 const authRoutes = require('./src/routes/authRoutes'); 
 
 const app = express();
-//Setup DB
-
 // Serve the static files from the React app
 app.use(express.static(path.join(__dirname, 'client/build')));
 //Setup Session

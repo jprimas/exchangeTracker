@@ -4,11 +4,13 @@ import './App.css';
 import Home from './pages/Home';
 import Registration from './pages/Registration';
 import Login from './pages/Login';
+import Header from './widgets/Header';
 
 class App extends Component {
   render() {
     const App = () => (
       <div>
+        <Header/>
         <Switch>
           <Route exact path='/' component={Home}/>
           <Route exact path='/register' component={Registration}/>

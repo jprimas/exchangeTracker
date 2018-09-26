@@ -23,7 +23,7 @@ class Transaction extends Component {
   render() {
     const { trx } = this.props;
     if (!trx) {
-    	return ("Fetching transactoins");
+    	return ("Fetching Transactions");
     }
     return (<div> {this.getTransactionString(trx)} </div>);
   }

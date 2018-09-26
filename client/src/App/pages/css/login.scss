@@ -1,27 +1,24 @@
 .Login {
-	background: #bbeced;
+	background: #f7efed;
 	height: 100vh;
 
-	.header{
-		height: 50px;
-	}
-
-	.footer{
-		height: 100px;
-	}
-
-	h1 {
-		text-align: center;
-	    padding-top: 10px;
-	    padding-bottom: 10px;
-	    border-bottom: 2px solid #bbeced;
-	}
-
 	.loginBox {
-		width: 500px;
+		position: relative;
+		top: 10%;
+		left: 50%;
+		margin-right: -50%;
+		transform: translate(-50%);
 		background: white;
-		margin-left: auto;
-		margin-right: auto;
+		width: 500px;
+		border-radius: 5px;
+
+	    h1 {
+			text-align: center;
+		    padding-top: 10px;
+		    padding-bottom: 10px;
+		    border-bottom: 2px solid #ded2cf;
+		    margin-top: 0px;
+		}
 
 		.error {
 			margin-left: 50px;

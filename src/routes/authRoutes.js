@@ -112,4 +112,18 @@ router.post('/api/register', [jsonParser], (req, res) => {
 	});
 });
 
+router.get('/api/userInfo', (req, res) => {
+	if (req.session.loginId) {
+		//Logged in
+		return res.json({
+			isLoggedIn: true
+		});
+	} else {
+		//Logged out
+		return res.json({
+			isLoggedIn: false
+		});
+	}
+});
+
 module.exports = router;

@@ -360,7 +360,6 @@ class Registration extends Component {
   render() {
     return (
       <div className="Login">
-        <div className="header"></div>
           <div className="loginBox">
             <h1> Register </h1>
             <div className="subtext">
@@ -371,7 +370,6 @@ class Registration extends Component {
             </div>
             {this._renderRegistrationPage()}
           </div>
-        <div className="footer"></div>
       </div>
     );
   }

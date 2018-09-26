@@ -1,3 +1,24 @@
 .App {
   text-align: center;
 }
+
+.header {
+	background: #f7efed;
+	width: 100%;
+	border-bottom: 2px solid #ded2cf;
+	height: 50px;
+
+	.title {
+		line-height: 50px;
+		font-size: 20px;
+		margin-left: 25px;
+	}
+
+	button {
+		position: relative;
+		top: 50%;
+		transform: translate(0,-50%);
+		float: right;
+		margin-right: 10px;
+	}
+}

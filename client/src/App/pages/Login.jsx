@@ -48,7 +48,6 @@ class Login extends Component {
   render() {
     return (
       <div className="Login">
-        <div className="header"></div>
           <div className="loginBox">
             <h1> Login </h1>
             <div className="error">
@@ -81,7 +80,6 @@ class Login extends Component {
               </div>
             </form>
           </div>
-        <div className="footer"></div>
       </div>
     );
   }
