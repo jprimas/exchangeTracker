@@ -37,8 +37,10 @@ class Login extends Component {
       password: this.state.password,
     }).then( result => {
       if (!result.data || result.data.hasError) {
+        this.props.loginCallback(false);
         this.setState({ error: "Incorrect username or password" });
       } else {
+        this.props.loginCallback(true);
         this.setState({ error: null });
         this.props.history.push('/');
       }
