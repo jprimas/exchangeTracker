@@ -1,0 +1,31 @@
+.Home {
+	background: #f7efed;
+	height: 100vh;
+
+	.colContainer {
+		padding-top: 50px;
+		width: 1000px;
+		margin: 0px auto;
+		.leftCol {
+			float: left;
+			width: 460px;
+			background: white;
+			border-radius: 5px;
+			min-height: 300px;
+		}
+
+		.rightCol {
+			float: left;
+			width: 460px;
+			margin-left: 40px;
+			background: white;
+			border-radius: 5px;
+			min-height: 300px;
+
+		}
+
+		h4 {
+			text-align: center;
+		}
+	}
+}

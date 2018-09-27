@@ -19,7 +19,7 @@ class TransactionProcessor {
 
 	process() {
 		return Promise.join(
-			this.getAllTransactions(),
+			this._getAllTransactions(),
 			this.getPurse(),
 			(trxs, purse) => {
 				return purse.getCoinMap().then( coinMap => {
@@ -50,7 +50,6 @@ class TransactionProcessor {
 
 					return Promise.all(promiseArr).then( () => {
 						return purseHelper.postProcessPurse().then( (result) => {
-							console.log(result);
 							return result;
 						});	
 					});
@@ -79,7 +78,7 @@ class TransactionProcessor {
 		});
 	}
 
-	getAllTransactions() {
+	_getAllTransactions() {
 		return Promise.join(
 			this.binanceHandler.getBinanceTransactions(),
 			this.gdaxHandler.getGdaxTransactions(),
@@ -92,6 +91,31 @@ class TransactionProcessor {
 				return trxs;
 			}
 		);
+	}
+
+	getAllTransactionsDecoupled() {
+		return this._getAllTransactions().then( (trxs) => {
+			let decoupledTrxs = [];
+			let previousTrx = null;
+			for (let i = 0; i < trxs.length; i++) {
+				let trx = trxs[i];
+				if (previousTrx != null &&
+					previousTrx.orderId === trx.orderId &&
+					previousTrx.price === trx.price &&
+					previousTrx.comissionAsset === trx.comissionAsset &&
+					previousTrx.type === trx.type &&
+					previousTrx.fromSymbol == trx.fromSymbol &&
+					previousTrx.toSymbol == trx.toSymbol) {
+					//Update the previous Trx instead of creating a new one
+					previousTrx.amount += trx.amount;
+					previousTrx.commissionAmount += trx.commissionAmount;
+				} else {
+					previousTrx = trx;
+					decoupledTrxs.push(trx);
+				}
+			}
+			return decoupledTrxs;
+		});
 	}
 
 }

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const Promise = require('bluebird');
 const express = require('express');
 const router = express.Router();
@@ -113,6 +114,12 @@ router.post('/api/register', [jsonParser], (req, res) => {
 });
 
 router.get('/api/userInfo', (req, res) => {
+	if (process.env.SKIP_AUTH === 'true') {
+		return res.json({
+			isLoggedIn: true
+		});
+	}
+
 	if (req.session.loginId) {
 		//Logged in
 		return res.json({

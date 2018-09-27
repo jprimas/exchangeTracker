@@ -76,6 +76,7 @@ class BinanceHandler {
 				return Promise.map(trades, (trade) => {
 					if (trade.isBuyer) {
 						transactions.push({
+							orderId: trade.order_id,
 							type: TransactionTypes.TRADE,
 							timestamp: new Date(trade.time),
 							fromSymbol: trade.symbol.substring(3),
@@ -87,6 +88,7 @@ class BinanceHandler {
 						});
 					} else if (!trade.isBuyer) {
 						transactions.push({
+							orderId: trade.order_id,
 							type: TransactionTypes.TRADE,
 							timestamp: new Date(trade.time),
 							fromSymbol: trade.symbol.substring(0,3),

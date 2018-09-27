@@ -41,7 +41,7 @@ app.get('/api/secure/processPurse', [requiresLogin], (req,res) => {
 
 app.get('/api/secure/getTransactions', [requiresLogin], (req,res) => {
 	let transactionProcessor = new TransactionProcessor(req.login);
-	return transactionProcessor.getAllTransactions()
+	return transactionProcessor.getAllTransactionsDecoupled()
 	.then( result => {
 		return res.json(result) 
 	})

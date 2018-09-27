@@ -73,6 +73,7 @@ class CoinbaseHandler {
 				let coinbaseFee = trx.fees.filter(fee => fee.type === 'coinbase')[0];
 				if (trx.resource === 'buy' && trx.status === 'completed') {
 					transactions.push({
+						orderId: trx.transaction.id,
 						type: TransactionTypes.TRADE,
 						timestamp: new Date(trx.created_at),
 						fromSymbol: 'USD',
@@ -107,9 +108,11 @@ class CoinbaseHandler {
 		}).then( (trxs) => {
 			for (let i = 0; i < trxs.length; i++) {
 				let trx = trxs[i];
+				//console.log(trx);
 				let coinbaseFee = trx.fees.filter(fee => fee.type === 'coinbase');
 				if (trx.resource === 'sell' && trx.status === 'completed') {
 					transactions.push({
+						orderId: trx.transaction.id,
 						type: TransactionTypes.TRADE,
 						timestamp: new Date(trx.created_at),
 						fromSymbol: 'ETH',
