@@ -62,7 +62,7 @@ class GdaxHandler {
 
 				if (trade.side === 'buy' && trade.settled) {
 					transactions.push({
-						orderId: trade.orderId,
+						orderId: trade.order_id,
 						type: TransactionTypes.TRADE,
 						timestamp: new Date(trade.created_at),
 						fromSymbol: 'USD',
@@ -74,7 +74,7 @@ class GdaxHandler {
 					})
 				} else if (trade.side === 'sell' && trade.settled) {
 					transactions.push({
-						orderId: trade.orderId,
+						orderId: trade.order_id,
 						type: TransactionTypes.TRADE,
 						timestamp: new Date(trade.created_at),
 						fromSymbol: 'ETH',

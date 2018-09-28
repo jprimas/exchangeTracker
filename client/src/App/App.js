@@ -49,7 +49,7 @@ class App extends Component {
   }
 }
 
-const PrivateRoute = ({ component: Component, loggedIn: loggedIn, ...rest }) => (
+const PrivateRoute = ({ component: Component, loggedIn, ...rest }) => (
   <Route {...rest} render={(props) => {
     if (loggedIn === true) {
       return ( <Component {...props} /> )

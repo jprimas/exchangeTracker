@@ -1,0 +1,61 @@
+.Transaction {
+	width: 100%;
+
+	.icon {
+		display: inline-block;
+		width: 50px;
+		height: 25px;
+		text-align: center;
+
+		&.trade {
+			color: orange;
+		}
+
+		&.withdrawal {
+			color: blue;
+		}
+
+		&.deposit {
+			color: green;
+		}
+	}
+
+	.type {
+		line-height: 25px;
+		display: inline-block;
+		width: 100px;
+	}
+
+	.value {
+		line-height: 25px;
+		display: inline-block;
+		width: 300px;
+
+		&.trade {
+
+			.from {
+				display: inline-block;
+				width: 115px;
+			}
+
+			.arrow {
+				display: inline-block;
+				width: 40px;
+			}
+
+			.to {
+				display: inline-block;
+				width: 115px;
+			}
+
+			img {
+				height: 25px;
+			}
+		}
+	}
+}
+
+.transactionList{
+	max-height: 500px;
+	overflow-y: overlay;
+}

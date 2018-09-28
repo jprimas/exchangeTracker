@@ -53,7 +53,7 @@ class Header extends Component {
   }
 
   render() {
-    return (<div className="header align-middle">
+    return (<div className="MainHeader align-middle">
       <span className="title">Exchange Tracker</span>
       {this.renderButtons()}
     </div>);

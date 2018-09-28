@@ -3,6 +3,14 @@ CommonUtil = {
         return ((value - 1) * 100).toFixed(2);
     },
 
+    formatWithTwoDecimals: function(value) {
+        return value.toFixed(2);
+    },
+
+    formatWithEightDecimals: function(value) {
+        return Math.round(value * 100000000) / 100000000;
+    },
+
     orderJsonObjectAlphabetically(jsonObject) {
 		let ordered = {};
 		Object.keys(jsonObject).sort().forEach(function(key) {

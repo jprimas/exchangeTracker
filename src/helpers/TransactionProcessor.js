@@ -99,7 +99,9 @@ class TransactionProcessor {
 			let previousTrx = null;
 			for (let i = 0; i < trxs.length; i++) {
 				let trx = trxs[i];
-				if (previousTrx != null &&
+				if (previousTrx &&
+					previousTrx.orderId &&
+					trx.orderId &&
 					previousTrx.orderId === trx.orderId &&
 					previousTrx.price === trx.price &&
 					previousTrx.comissionAsset === trx.comissionAsset &&
@@ -107,9 +109,12 @@ class TransactionProcessor {
 					previousTrx.fromSymbol == trx.fromSymbol &&
 					previousTrx.toSymbol == trx.toSymbol) {
 					//Update the previous Trx instead of creating a new one
-					previousTrx.amount += trx.amount;
+					previousTrx.amount += CommonUtil.formatWithEightDecimals(trx.amount);
 					previousTrx.commissionAmount += trx.commissionAmount;
 				} else {
+					console.log(trx.amount);
+					trx.amount = CommonUtil.formatWithEightDecimals(trx.amount);
+					console.log(trx.amount);
 					previousTrx = trx;
 					decoupledTrxs.push(trx);
 				}

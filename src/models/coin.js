@@ -1,4 +1,5 @@
-'use strict';
+const {CommonUtil} = require('../utils/CommonUtil');
+
 module.exports = (sequelize, DataTypes) => {
   const Coin = sequelize.define('Coin', {
     purseId: DataTypes.INTEGER,
@@ -15,8 +16,8 @@ module.exports = (sequelize, DataTypes) => {
   Coin.prototype.getDto = function() {
     return {
       symbol: this.symbol,
-      amount: this.amount,
-      totalPurchasePrice: this.totalPurchasePrice
+      amount: CommonUtil.formatWithEightDecimals(this.amount),
+      totalPurchasePrice: CommonUtil.formatWithTwoDecimals(this.totalPurchasePrice)
     }
   }
 

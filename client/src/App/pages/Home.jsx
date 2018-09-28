@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import Transactions from '../widgets/Transactions';
+import CoinStats from '../widgets/CoinStats';
 import './css/home.css';
 
 
@@ -23,49 +23,63 @@ class Home extends Component {
     .then(purse => this.setState({ purse }))
   }
 
-  // render() {
-  //   const { purse } = this.state;
-  //   return (
-  //   <div className="App">
-  //     <h1>Individual Coin Analysis</h1>
-  //     {purse && !purse.hasError && Object.keys(purse.coins).length ? (
-  //         <div>
-  //           {Object.keys(purse.coins).map((key) => {
-  //             if (key === 'USD') return;
-  //             return(
-  //               <div key={key}>
-  //                 {key + " => " + purse.coins[key].percentageGainInUsd + "%"}
-  //               </div>
-  //             );
-  //           })}
-  //         </div>
-  //       ) : (
-  //         <div>
-  //           <h2>{purse && purse.error ? purse.error : "Fetching Data..."}</h2>
-  //         </div>
-  //       )
-  //     }
-  //     <h1>Total Value Analysis</h1>
-  //     {purse && !purse.hasError ? (
-  //           <div>
-  //             <div>
-  //               {"Total Percentage Gains in USD => " + purse.totalPercentageGainInUsd + "%"}
-  //             </div>
-  //             <div>
-  //               {"Total Fees Paid => $" + purse.totalFees}
-  //             </div>
-  //           </div>
-  //         ) : (
-  //           <div>
-  //             <h2>{purse && purse.error ? purse.error : "Fetching Data..."}</h2>
-  //           </div>
-  //         )
-  //     }
-  //     <h1>Transaction Feed</h1>
-  //     <Transactions/>
-  //   </div>
-  //   );
-  // }
+  renderInvestmentSummaryBox = () => {
+    const { purse } = this.state;
+
+    return (
+      <div className="box summaryBox">
+        <h3>Investment Summary</h3>
+        { purse && !purse.hasError ? (
+            <div>
+              <ul className="keys">
+                <li>Total USD Invested</li>
+                <li>Current Total Value in USD</li>
+                <li>Total Percentage Gains</li>
+                <li>Total Fees Paid</li>
+              </ul>
+              <ul className="values">
+                <li>{'$' + purse.totalUsdInvested}</li>
+                <li>{'$' + purse.totalCurrentValueInUsd}</li>
+                <li>{purse.totalPercentageGainInUsd + '%'}</li>
+                <li>{'$'+purse.totalFees}</li>
+              </ul>
+            </div>
+          ) : (
+            <div className="loadingText">
+              <h4>{purse && purse.error ? purse.error : "Fetching Data..."}</h4>
+            </div>
+          )
+        }
+      </div>
+    )
+  }
+
+  renderCoinSummaryBox = () => {
+    const { purse } = this.state;
+    return (
+      <div className="box coinSummaryBox">
+        <h3>Coin Breakdown</h3>
+        { purse && !purse.hasError && Object.keys(purse.coins).length ? (
+            <div className="coins">
+              <div className="header lineItem">
+                <span className="symbol">Symbol</span>
+                <span className="amount">Coin Count</span>
+                <span className="gain">Percentage Gain</span>
+              </div>
+              {Object.keys(purse.coins).map((key) => {
+                if (key === 'USD') return;
+                return ( <CoinStats coin={purse.coins[key]} key={key}/> );
+              })}
+            </div>
+          ) : (
+            <div className="loadingText">
+              <h4>{purse && purse.error ? purse.error : "Fetching Data..."}</h4>
+            </div>
+          )
+        }
+      </div>
+    )
+  }
 
 
   render() {
@@ -73,12 +87,15 @@ class Home extends Component {
     return (
     <div className="Home">
       <div className="colContainer">
-        <div className="leftCol">
-          <h4>Summary</h4>
+        <div className="col leftCol">
+          {this.renderInvestmentSummaryBox()}
+          {this.renderCoinSummaryBox()}
         </div>
-        <div className="rightCol">
-          <h4>Transaction History</h4>
-          <Transactions/>
+        <div className="col rightCol">
+          <div className="box transactionsBox">
+            <h3>Transaction History</h3>
+            <Transactions/>
+          </div>
         </div>
       </div>
     </div>

@@ -43,6 +43,7 @@ app.get('/api/secure/getTransactions', [requiresLogin], (req,res) => {
 	let transactionProcessor = new TransactionProcessor(req.login);
 	return transactionProcessor.getAllTransactionsDecoupled()
 	.then( result => {
+		console.log(result);
 		return res.json(result) 
 	})
 	.catch( error => {

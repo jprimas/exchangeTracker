@@ -25,10 +25,10 @@ class Transactions extends Component {
     let transactionList = [];
     if (transactions && transactions.length > 0) {
     	transactionList = transactions.map(function(trx){
-	    	return <Transaction trx={trx}/>;
+	    	return <Transaction trx={trx} key={trx.orderId+' '+trx.timestamp}/>;
 	    });
     }
-    return (<div>{transactionList}</div>);
+    return (<div className="transactionList">{transactionList}</div>);
   }
 }
 

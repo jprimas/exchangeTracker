@@ -93,7 +93,7 @@ class PurseHelper {
 		let result = this.purse.getDto();
 		return this._postProcessCoins().spread( (coins, totalCurrentValueInUsd) => {
 			this._persistPurseAndCoins();
-			result.totalCurrentValueInUsd = totalCurrentValueInUsd;
+			result.totalCurrentValueInUsd = CommonUtil.formatWithTwoDecimals(totalCurrentValueInUsd);
 			result.totalPercentageGainInUsd = CommonUtil.formatAsPercentage(totalCurrentValueInUsd / this.purse.totalUsdInvested);
 			result.coins = coins;
 			return result;
@@ -110,10 +110,11 @@ class PurseHelper {
 				let currentValueInUsd = currentPrice * this.coinsMap[symbol].amount;
 				totalCurrentValue += currentPrice * this.coinsMap[symbol].amount;
 				coin.percentageGainInUsd = CommonUtil.formatAsPercentage(currentValueInUsd / this.coinsMap[symbol].totalPurchasePrice);
-				coin.currentValueInUsd = currentValueInUsd;
+				coin.currentValueInUsd = CommonUtil.formatWithTwoDecimals(currentValueInUsd);
 				coins[symbol] = coin;
 			});
 		}).then( () => {
+			coins = CommonUtil.orderJsonObjectAlphabetically(coins);
 			return [coins, totalCurrentValue];
 		});
 	}
