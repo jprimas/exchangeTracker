@@ -46,7 +46,7 @@ class Transaction extends Component {
       return (
         <span className="value trade">
           <span className="from">{value + ' ' + trx.fromSymbol}</span>
-          <span className="arrow"><img src={process.env.PUBLIC_URL+"/right.png"} alt="=>"/></span>
+          <span className="arrow"><img src={process.env.PUBLIC_URL+"/rightArrow.png"} alt="=>"/></span>
           <span className="to">{trx.amount + ' ' + trx.toSymbol}</span>
         </span>
       );

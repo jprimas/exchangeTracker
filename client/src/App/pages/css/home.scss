@@ -1,7 +1,4 @@
 .Home {
-	background: #f7efed;
-	height: 100vh;
-
 	.colContainer {
 		padding-top: 50px;
 		width: 1000px;
@@ -30,6 +27,15 @@
 		h3 {
 			text-align: center;
 			padding-top: 10px;
+			padding-bottom: 5px;
+			border-bottom: 1px solid #f7efed;
+		}
+	}
+
+	.box {
+		h4 {
+			text-align: center;
+			padding-top: 50px;
 		}
 	}
 
@@ -50,11 +56,6 @@
 			text-align: left;
 			width:250px;
 			font-size: 20px;
-		}
-
-		h4 {
-			text-align: center;
-			padding-top: 50px;
 		}
 	}
 
@@ -103,12 +104,11 @@
 		.gain {
 			width: 160px;
 		}
+	}
 
-
-		h4 {
-			text-align: center;
-			padding-top: 50px;
-		}
+	.taxBox {
+		margin-top: 40px;
+		margin-bottom: 50px;
 	}
 
 	.transactionsBox {

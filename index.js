@@ -43,6 +43,22 @@ app.get('/api/secure/getTransactions', [requiresLogin], (req,res) => {
 	let transactionProcessor = new TransactionProcessor(req.login);
 	return transactionProcessor.getAllTransactionsDecoupled()
 	.then( result => {
+		//console.log(result);
+		return res.json(result) 
+	})
+	.catch( error => {
+		console.log(error);
+		return res.json({
+			hasError: true,
+			error: "Something went wrong"
+		});
+	});
+});
+
+app.get('/api/secure/calculateTaxes', [requiresLogin], (req,res) => {
+	let transactionProcessor = new TransactionProcessor(req.login);
+	return transactionProcessor.calculateCapitalGains(2018)
+	.then( result => {
 		console.log(result);
 		return res.json(result) 
 	})

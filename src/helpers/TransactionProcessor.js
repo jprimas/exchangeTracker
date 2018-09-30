@@ -4,7 +4,7 @@ const GdaxHandler = require('../coinbase/GdaxHandler')
 const CoinbaseHandler = require('../coinbase/CoinbaseHandler')
 const {CommonUtil, TransactionTypes} = require('../utils/CommonUtil');
 const PurseHelper = require('../utils/PurseHelper');
-const CryptoCompareApi = require('../utils/CryptoCompareApi');
+const TaxHelper = require('../utils/TaxHelper');
 const models = require('../models');
 
 
@@ -20,7 +20,7 @@ class TransactionProcessor {
 	process() {
 		return Promise.join(
 			this._getAllTransactions(),
-			this.getPurse(),
+			this._getPurse(),
 			(trxs, purse) => {
 				return purse.getCoinMap().then( coinMap => {
 					let purseHelper = new PurseHelper(purse, coinMap);
@@ -58,7 +58,7 @@ class TransactionProcessor {
 		);
 	}
 
-	getPurse() {
+	_getPurse() {
 		return models.Purse.findOne({
 		    where: {loginId: this.login.id},
 		    include: [models.Coin]
@@ -112,14 +112,18 @@ class TransactionProcessor {
 					previousTrx.amount += CommonUtil.formatWithEightDecimals(trx.amount);
 					previousTrx.commissionAmount += trx.commissionAmount;
 				} else {
-					console.log(trx.amount);
 					trx.amount = CommonUtil.formatWithEightDecimals(trx.amount);
-					console.log(trx.amount);
 					previousTrx = trx;
 					decoupledTrxs.push(trx);
 				}
 			}
 			return decoupledTrxs;
+		});
+	}
+
+	calculateCapitalGains(year) {
+		return this._getAllTransactions().then( (trxs) => {
+			return TaxHelper.calculateCapitalGains(trxs, year);
 		});
 	}
 

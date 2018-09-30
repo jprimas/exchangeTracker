@@ -15,12 +15,15 @@ class Home extends Component {
 
   componentDidMount() {
     this.getProcessedPurse();
-  }
 
-  getProcessedPurse = () => {
     fetch('/api/secure/processPurse')
     .then( res => res.json())
     .then(purse => this.setState({ purse }))
+  }
+
+  getProcessedPurse = () => {
+    fetch('/api/secure/calculateTaxes')
+    .then( res => res.json());
   }
 
   renderInvestmentSummaryBox = () => {
@@ -80,6 +83,23 @@ class Home extends Component {
       </div>
     )
   }
+  renderTaxBox = () => {
+    const { purse } = this.state;
+    return (
+      <div className="box taxBox">
+        <h3>Taxes</h3>
+        { purse && !purse.hasError && Object.keys(purse.coins).length ? (
+            <div className="taxes">
+            </div>
+          ) : (
+            <div className="loadingText">
+              <h4>{purse && purse.error ? purse.error : "Fetching Data..."}</h4>
+            </div>
+          )
+        }
+      </div>
+    )
+  }
 
 
   render() {
@@ -90,6 +110,7 @@ class Home extends Component {
         <div className="col leftCol">
           {this.renderInvestmentSummaryBox()}
           {this.renderCoinSummaryBox()}
+          {this.renderTaxBox()}
         </div>
         <div className="col rightCol">
           <div className="box transactionsBox">

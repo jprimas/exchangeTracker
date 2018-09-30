@@ -4,9 +4,6 @@ const BASE_URL = "https://min-api.cryptocompare.com";
 
 class CryptoCompareApi {
 
-	// TODO: Does this need to be a class?
-	constructor() {}
-
 	static getCurrentPrice(fromSymbol, toSymbol) {
 		return axios.get(BASE_URL + '/data/price', {
 			params: {
@@ -61,7 +58,9 @@ class CryptoCompareApi {
 			} else {
 				return response.data
 			}
-		});
+		}).catch( () => {
+			return this.getHistoricalPrice(fromSymbol, toSymbol, timestamp, count+1);
+		})
 	}
 
 	static getHistoricalPriceInEth(fromSymbol, timestamp) {
