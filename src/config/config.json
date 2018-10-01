@@ -7,7 +7,7 @@
     "dialect": "sqlite",
     "storage": "data.sqlite3"
   },
-  "production": {
+  "postgres": {
   	"username": "ntcrgmqkncnffv",
     "password": "da57f2b01fb6776390d66edd46163a64ea886c16bba5d2c412cfbeaa6521b5cc",
     "database": "dc0qi0f8hdichb",
@@ -15,5 +15,13 @@
     "port": 5432,
     "dialect": "postgres",
     "protocol": "postgres"
+  },
+  "production": {
+  	"username": "laj2k19mbd3h0iyb",
+    "password": "bxv3bfh6irn6gwj5",
+    "database": "e47ai91ec9ltgp33",
+    "host": "uc13jynhmkss3nve.cbetxkdyhwsb.us-east-1.rds.amazonaws.com",
+    "port": 3306,
+    "dialect": "mysql"
   }
 }
