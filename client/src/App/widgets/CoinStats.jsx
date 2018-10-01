@@ -12,7 +12,7 @@ class CoinStats extends Component {
       <div className="values lineItem">
         <span className="symbol">{coin.symbol}</span>
         <span className="amount">{coin.amount}</span>
-        <span className="gain">{coin.percentageGainInUsd + '%'}</span>
+        <span className={"percentGain " + (coin.percentageGainInUsd < 0 ? "loss" : "gain")} >{coin.percentageGainInUsd + '%'}</span>
         <hr/>
       </div>
     );

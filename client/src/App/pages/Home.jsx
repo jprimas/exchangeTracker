@@ -45,7 +45,7 @@ class Home extends Component {
     .then( result => {
       this.setState({taxCalculating: false});
       if (!result.data || result.data.hasError) {
-        this.setState({ taxError: "Failed to calculate taxes" });
+        this.setState({ taxError: (result.data && result.data.error) ? "Error: " + result.data.error : "Failed to calculate taxes" });
       } else {
         this.setState({
           taxCalculated: true,
@@ -105,7 +105,7 @@ class Home extends Component {
               <ul className="values">
                 <li>{'$' + purse.totalUsdInvested}</li>
                 <li>{'$' + purse.totalCurrentValueInUsd}</li>
-                <li>{purse.totalPercentageGainInUsd + '%'}</li>
+                <li className={purse.totalPercentageGainInUsd < 0 ? "loss" : "gain"}>{purse.totalPercentageGainInUsd + '%'}</li>
                 <li>{'$'+purse.totalFees}</li>
               </ul>
             </div>
@@ -121,6 +121,7 @@ class Home extends Component {
 
   renderCoinSummaryBox = () => {
     const { purse } = this.state;
+
     return (
       <div className="box coinSummaryBox">
         <h3>Coin Breakdown</h3>
@@ -129,7 +130,7 @@ class Home extends Component {
               <div className="header lineItem">
                 <span className="symbol">Symbol</span>
                 <span className="amount">Coin Count</span>
-                <span className="gain">Percentage Gain</span>
+                <span className="percentGain">Percentage Gain</span>
               </div>
               {Object.keys(purse.coins).map((key) => {
                 if (key === 'USD') return;
@@ -191,19 +192,19 @@ class Home extends Component {
               <h4>Tax Information</h4>
               <div className="description">{"Estimated taxes for " + this.state.year + " given the net income of " + this.state.estimatedNetIncome} </div>
               <div>
-                <span className="item">Short Term Capital Gains</span><span className="value">{this.state.shortTermCapitalGains}</span>
+                <span className="item">Short Term Capital Gains</span><span className="value">{"$" + this.state.shortTermCapitalGains}</span>
               </div>
               <div>
-                <span className="item">Long Term Capital Gains</span><span className="value">{this.state.longTermCapitalGains}</span>
+                <span className="item">Long Term Capital Gains</span><span className="value">{"$" + this.state.longTermCapitalGains}</span>
               </div>
               <div>
-                <span className="item">Short Term Capital Losses</span><span className="value">{this.state.shortTermCapitalLosses}</span>
+                <span className="item">Short Term Capital Losses</span><span className="value">{"$" + this.state.shortTermCapitalLosses}</span>
               </div>
               <div>
-                <span className="item">Long Term Capital Losses</span><span className="value">{this.state.longTermCapitalLosses}</span>
+                <span className="item">Long Term Capital Losses</span><span className="value">{"$" + this.state.longTermCapitalLosses}</span>
               </div>
               <div>
-                <span className="item">Estimated Taxes</span><span className="value">{this.state.estimatedTaxes}</span>
+                <span className="item">Estimated Taxes</span><span className="value">{"$" + this.state.estimatedTaxes}</span>
               </div>
             </div>
           </div>

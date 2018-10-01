@@ -16,6 +16,7 @@
 				.loadingText {
 					text-align: center;
 					padding-top: 50px;
+					padding-bottom: 60px;
 				}
 			}
 		}
@@ -34,6 +35,14 @@
 			padding-top: 10px;
 			padding-bottom: 5px;
 			border-bottom: 1px solid #f7efed;
+		}
+
+		.loss {
+			color: red;
+		}
+
+		.gain {
+			color: green;
 		}
 	}
 
@@ -101,8 +110,8 @@
 			width: 160px;
 		}
 
-		.gain {
-			width: 160px;
+		.percentGain {
+			widh: 160px;
 		}
 	}
 
@@ -137,6 +146,7 @@
 			text-align: center;
 			font-size: 16px;
 			margin-top: 20px;
+			padding-bottom: 20px;
 		}
 
 		.resultSection {

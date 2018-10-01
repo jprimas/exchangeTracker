@@ -157,7 +157,9 @@ TaxHelper = {
 			let adjustedShortTermCapitalGains = capitalGainsInfo.shortTermCapitalGains - shortTermCapitalGainsAdjustment;
 			let adjustedLongTermCapitalGains = capitalGainsInfo.longTermCapitalGains - longTermCapitalGainsAdjustment;
 
-			capitalGainsInfo.estimatedTaxes = adjustedShortTermCapitalGains * this._getShortTermTaxRate(netIncome) + adjustedLongTermCapitalGains * this._getLongTermTaxRate(netIncome);
+			let estimatedTaxes = adjustedShortTermCapitalGains * this._getShortTermTaxRate(netIncome) +
+				adjustedLongTermCapitalGains * this._getLongTermTaxRate(netIncome)
+			capitalGainsInfo.estimatedTaxes = CommonUtil.formatWithTwoDecimals(estimatedTaxes);
 
 			return capitalGainsInfo;
 		});
