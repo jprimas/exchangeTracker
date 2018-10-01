@@ -11,7 +11,12 @@
 			.box {
 				background: white;
 				border-radius: 5px;
-				min-height: 200px;
+				min-height: 150px;
+
+				.loadingText {
+					text-align: center;
+					padding-top: 50px;
+				}
 			}
 		}
 
@@ -32,14 +37,9 @@
 		}
 	}
 
-	.box {
-		h4 {
-			text-align: center;
-			padding-top: 50px;
-		}
-	}
-
 	.summaryBox {
+		height: 200px;
+
 		ul {
 			list-style: none;
 			float: left;
@@ -109,6 +109,68 @@
 	.taxBox {
 		margin-top: 40px;
 		margin-bottom: 50px;
+
+		form {
+			margin-left: 20px;
+			margin-right: 20px;
+
+			label {
+				padding: 10px;
+			}
+
+			input {
+				width: 100px;
+			}
+
+			.actions {
+				text-align: center;
+				margin-top: 5px;
+				margin-bottom: 5px;
+
+				button {
+					width: 200px;
+				}
+			}
+		}
+
+		.taxStateText {
+			text-align: center;
+			font-size: 16px;
+			margin-top: 20px;
+		}
+
+		.resultSection {
+			margin-left: 20px;
+			margin-right: 20px;
+			padding-bottom: 20px;
+
+			h4 {
+				text-align: center;
+				margin-bottom: 0px;
+			}
+
+			.description {
+				text-align: center;
+				margin-bottom: 10px;
+				font-style: italic;
+			}
+
+			span {
+				display: inline-block;
+				width: 50%;
+				line-height: 25px;
+
+				&.item {
+					text-align: right;
+					padding-right: 20px;
+				}
+
+				&.value {
+					font-size: 18px;
+				}
+			}
+		}
+
 	}
 
 	.transactionsBox {

@@ -4,7 +4,7 @@ var {CommonUtil, TransactionTypes} = require('../utils/CommonUtil');
 
 const USD_SYMBOL = 'USD';
 const ETH_SYMBOL = 'ETH';
-
+const MAX_TAX_ADJUSTMENT = 3000;
 
 class CoinStore {
 
@@ -12,16 +12,15 @@ class CoinStore {
 		this.store = {};
 		this.shortTermCapitalGains = 0;
 		this.longTermCapitalGains = 0;
-		this.losses = 0;
+		this.shortTermCapitalLosses = 0;
+		this.longTermCapitalLosses = 0;
 		this.year = year;
 	}
 
 	handleBuy(trx) {
-		console.log("Handle Buy");
 		if (!this.store[trx.toSymbol]) {
 			this.store[trx.toSymbol] = [];
 		}
-		console.log("Added " + trx.amount + " of " + trx.toSymbol);
 		this.store[trx.toSymbol].push({
 			timestamp: trx.timestamp,
 			amount: trx.amount,
@@ -29,10 +28,7 @@ class CoinStore {
 		})
 	}
 
-
-
 	handleSell(trx) {
-		console.log("Handle Sell: " + trx.timestamp.getFullYear());
 		let heldCoins = this.store[trx.fromSymbol];
 		let amountSold = trx.amount * trx.price;
 		let promises = [];
@@ -41,7 +37,7 @@ class CoinStore {
 				console.log("Out of Ecosystem Error: Selling more coins then bought");
 				break;
 			}
-			console.log("AmountSold: " + amountSold + " of " + trx.fromSymbol);
+
 			let bunch = heldCoins.shift();
 			let coinCount;
 			if (amountSold >= bunch.amount) {
@@ -57,11 +53,10 @@ class CoinStore {
 				}
 			}
 
-			if (trx.timestamp.getFullYear() !== this.year) {
-				console.log("fail " + trx.timestamp.getFullYear());
+			// Only calculate capital gains for a specific year
+			if (trx.timestamp.getFullYear()+"" !== this.year) {
 				continue;
 			}
-			console.log("passed " + trx.timestamp.getFullYear());
 
 			// Check if this sell is considered long term capital gain
 			let isLongTerm = false;
@@ -70,16 +65,18 @@ class CoinStore {
 				isLongTerm = true;
 			}
 
-			// TODO: only do this for trxs witin this year
 			promises.push(Promise.join(
 				bunch.price ? Promise.resolve(bunch.price * coinCount) : CryptoCompareApi.convertAssetValueToUsd(trx.fromSymbol, coinCount, bunch.timestamp),
 				CryptoCompareApi.convertAssetValueToUsd(trx.fromSymbol, coinCount, trx.timestamp),
 				(pastValue, currentValue) => {
 					bunch.price = pastValue / coinCount;
 					let gains = currentValue - pastValue;
-					console.log("Gains: " + gains);
 					if (gains < 0) {
-						this.losses += gains;
+						if (isLongTerm) {
+							this.longTermCapitalLosses -= gains;
+						} else {
+							this.shortTermCapitalLosses -= gains;
+						}
 					} else if (isLongTerm) {
 						this.longTermCapitalGains += gains;
 					} else {
@@ -95,16 +92,17 @@ class CoinStore {
 
 	getCapitalGains() {
 		return {
-			shortTermCapitalGains: this.shortTermCapitalGains,
-			longTermCapitalGains: this.longTermCapitalGains,
-			losses: this.losses
+			shortTermCapitalGains: CommonUtil.formatWithTwoDecimals(this.shortTermCapitalGains),
+			longTermCapitalGains: CommonUtil.formatWithTwoDecimals(this.longTermCapitalGains),
+			shortTermCapitalLosses: CommonUtil.formatWithTwoDecimals(this.shortTermCapitalLosses),
+			longTermCapitalLosses: CommonUtil.formatWithTwoDecimals(this.longTermCapitalLosses)
 		}
 	}
 }
 
 TaxHelper = {
 
-	calculateCapitalGains(trxs, year) {
+	calculateCapitalGains(trxs, year, netIncome) {
 		let coinStore = new CoinStore(year);
 		let promises = [];
 		for(let i = 0; i < trxs.length; i++) {
@@ -121,8 +119,76 @@ TaxHelper = {
 			}
 		}
 		return Promise.all(promises).then( () => {
-			return coinStore.getCapitalGains();
+			let capitalGainsInfo = coinStore.getCapitalGains();
+			let totalAdjustment = MAX_TAX_ADJUSTMENT;
+			let totalShortTermAdjustment = capitalGainsInfo.shortTermCapitalGains;
+			let totalLongTermAdjustment = capitalGainsInfo.longTermCapitalGains;
+
+			// Attempt to reduce short term capital gain using short term capital losses
+			let shortTermCapitalGainsAdjustment = Math.min(
+				totalAdjustment,
+				totalShortTermAdjustment,
+				capitalGainsInfo.shortTermCapitalLosses);
+			totalAdjustment -= shortTermCapitalGainsAdjustment;
+			totalShortTermAdjustment -= shortTermCapitalGainsAdjustment;
+
+			// Attempt to reduce long term capital gain using long term capital losses
+			let longTermCapitalGainsAdjustment = Math.min(
+				totalAdjustment,
+				totalLongTermAdjustment, 
+				capitalGainsInfo.longTermCapitalLosses);
+			totalAdjustment -= longTermCapitalGainsAdjustment;
+			totalLongTermAdjustment -= longTermCapitalGainsAdjustment;
+			
+			// Attempt to reduce short term capital gain using long term capital losses
+			let longToShortCarryOverAdjustment = Math.min(totalAdjustment,
+				totalShortTermAdjustment,
+				Math.max(0, capitalGainsInfo.longTermCapitalLosses - longTermCapitalGainsAdjustment));
+			totalAdjustment -= longToShortCarryOverAdjustment;
+			
+			// Attempt to reduce long term capital gain using short term capital losses
+			let shortToLongCarryOverAdjustment = Math.min(
+				totalAdjustment,
+				totalLongTermAdjustment,
+				Math.max(0, capitalGainsInfo.shortTermCapitalLosses - shortTermCapitalGainsAdjustment));
+			shortTermCapitalGainsAdjustment += longToShortCarryOverAdjustment;
+			longTermCapitalGainsAdjustment += shortToLongCarryOverAdjustment;
+
+			let adjustedShortTermCapitalGains = capitalGainsInfo.shortTermCapitalGains - shortTermCapitalGainsAdjustment;
+			let adjustedLongTermCapitalGains = capitalGainsInfo.longTermCapitalGains - longTermCapitalGainsAdjustment;
+
+			capitalGainsInfo.estimatedTaxes = adjustedShortTermCapitalGains * this._getShortTermTaxRate(netIncome) + adjustedLongTermCapitalGains * this._getLongTermTaxRate(netIncome);
+
+			return capitalGainsInfo;
 		});
+	},
+
+	_getShortTermTaxRate(income) {
+		if (income <= 9525) {
+			return .10;
+		} else if (income <= 38700) {
+			return .15;
+		} else if (income <= 93700) {
+			return .25;
+		} else if (income <= 195450) {
+			return .28;
+		} else if (income <= 424950) {
+			return .33;
+		} else if (income <= 426700) {
+			return .35;
+		} else {
+			return .396;
+		}
+	},
+
+	_getLongTermTaxRate(income) {
+		if (income <= 38600) {
+			return 0;
+		} else if (income <= 425800) {
+			return .15;
+		} else {
+			return .20;
+		}
 	}
 }
 

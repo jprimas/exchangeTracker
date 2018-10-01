@@ -56,8 +56,15 @@ app.get('/api/secure/getTransactions', [requiresLogin], (req,res) => {
 });
 
 app.get('/api/secure/calculateTaxes', [requiresLogin], (req,res) => {
+	if (!req.query.year || !req.query.netIncome || req.query.year < 2000 || req.query.year > 2050) {
+		return res.json({
+			hasError: true,
+			error: "Invalid Input Params"
+		});
+	}
+
 	let transactionProcessor = new TransactionProcessor(req.login);
-	return transactionProcessor.calculateCapitalGains(2018)
+	return transactionProcessor.calculateCapitalGains(req.query.year, req.query.netIncome)
 	.then( result => {
 		console.log(result);
 		return res.json(result) 

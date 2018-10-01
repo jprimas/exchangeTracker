@@ -2,9 +2,9 @@ const axios = require('axios');
 
 const BASE_URL = "https://min-api.cryptocompare.com";
 
-class CryptoCompareApi {
+CryptoCompareApi = {
 
-	static getCurrentPrice(fromSymbol, toSymbol) {
+	getCurrentPrice(fromSymbol, toSymbol) {
 		return axios.get(BASE_URL + '/data/price', {
 			params: {
 				fsym: fromSymbol,
@@ -18,26 +18,26 @@ class CryptoCompareApi {
 				return response.data
 			}
 		})
-	}
+	},
 
-	static getCurrentPriceInUsd(fromSymbol) {
+	getCurrentPriceInUsd(fromSymbol) {
 		return this.getCurrentPrice(fromSymbol, "USD")
 		.then( (data) => data.USD );
-	}
+	},
 
-	static getCurrentPriceInEth(fromSymbol) {
+	getCurrentPriceInEth(fromSymbol) {
 		return this.getCurrentPrice(fromSymbol, "ETH")
 		.then( (data) => data.ETH );
-	}
+	},
 
-	static getCurrentPriceOfEthInUsd() {
+	getCurrentPriceOfEthInUsd() {
 		return this.getCurrentPriceInUsd("ETH");
-	}
+	},
 
 	/**
 	 * Queries for the historical price of a specific coin at a given timestamp
 	 */
-	static getHistoricalPrice(fromSymbol, toSymbol, timestamp, count) {
+	getHistoricalPrice(fromSymbol, toSymbol, timestamp, count) {
 		return axios.get(BASE_URL + '/data/pricehistorical', {
 			params: {
 				fsym: fromSymbol,
@@ -61,25 +61,25 @@ class CryptoCompareApi {
 		}).catch( () => {
 			return this.getHistoricalPrice(fromSymbol, toSymbol, timestamp, count+1);
 		})
-	}
+	},
 
-	static getHistoricalPriceInEth(fromSymbol, timestamp) {
+	getHistoricalPriceInEth(fromSymbol, timestamp) {
 		return this.getHistoricalPrice(fromSymbol, "ETH", timestamp, 0)
 		.then( (data) => data[fromSymbol].ETH );
-	}
+	},
 
-	static getHistoricalPriceInUsd(fromSymbol, timestamp) {
+	getHistoricalPriceInUsd(fromSymbol, timestamp) {
 		return this.getHistoricalPrice(fromSymbol, "USD", timestamp, 0)
 		.then( (data) => {
 			return data[fromSymbol].USD
 		});
-	}
+	},
 
-	static getHistoricalPriceOfEthInUsd(timestamp) {
+	getHistoricalPriceOfEthInUsd(timestamp) {
 		return this.getHistoricalPriceInUsd("ETH", timestamp);
-	}
+	},
 
-	static convertAssetValueToUsd(symbol, amount, timestamp) {
+	convertAssetValueToUsd(symbol, amount, timestamp) {
 		if (symbol == 'USD') {
 			return Promise.resolve(amount);
 		}

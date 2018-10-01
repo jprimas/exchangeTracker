@@ -121,9 +121,9 @@ class TransactionProcessor {
 		});
 	}
 
-	calculateCapitalGains(year) {
+	calculateCapitalGains(year, netIncome) {
 		return this._getAllTransactions().then( (trxs) => {
-			return TaxHelper.calculateCapitalGains(trxs, year);
+			return TaxHelper.calculateCapitalGains(trxs, year, netIncome);
 		});
 	}
 
