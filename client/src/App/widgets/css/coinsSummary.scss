@@ -1,0 +1,46 @@
+.coinSummaryBox {
+	margin-top: 40px;
+
+	.coins {
+		padding-bottom:10px;
+	}
+
+	.lineItem {
+		margin-left: 45px;
+	}
+
+	.header span {
+		display: inline-block;
+		font-size: 16px;
+		font-weight: bold;
+		margin-bottom: 5px;
+	}
+
+	.values {
+		span {
+			display: inline-block;
+			height: 25px;
+		}
+
+		hr {
+			width: 285px;
+			margin-top: 0px;
+			margin-bottom: 5px;
+			margin-left: 25px;
+		}
+	}
+
+	.symbol {
+		text-align: right;
+		padding-right: 20px;
+		width: 80px;
+	}
+
+	.amount {
+		width: 160px;
+	}
+
+	.percentGain {
+		widh: 160px;
+	}
+}

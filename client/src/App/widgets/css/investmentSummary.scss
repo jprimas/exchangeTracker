@@ -1,0 +1,21 @@
+.summaryBox {
+	height: 200px;
+
+	ul {
+		list-style: none;
+		float: left;
+		font-size: 14px;
+		line-height: 35px;
+	}
+
+	.keys{
+		text-align: right;
+		width:210px;
+	}
+
+	.values{
+		text-align: left;
+		width:250px;
+		font-size: 20px;
+	}
+}
