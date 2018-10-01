@@ -1,13 +1,16 @@
 .MainHeader {
-	background: #f7efed;
+	background: #0667d0;
 	width: 100%;
-	border-bottom: 2px solid #ded2cf;
-	height: 50px;
+	border-bottom: 3px solid white;
+	height: 60px;
+
+	font-family: proxima-nova,helvetica neue,Helvetica,Arial,sans-serif;
 
 	.title {
-		line-height: 50px;
+		line-height: 60px;
 		font-size: 20px;
 		margin-left: 25px;
+		color: white;
 	}
 
 	button {

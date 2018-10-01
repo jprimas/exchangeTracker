@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { Route, Switch, Redirect } from 'react-router-dom';
 import axios from 'axios';
-import './App.css';
 import Home from './pages/Home';
 import Registration from './pages/Registration';
 import Login from './pages/Login';
 import Header from './widgets/Header';
+import './App.css';
 
 class App extends Component {
   constructor(props) {
@@ -15,7 +15,7 @@ class App extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount = () => {
     axios.get('/api/userInfo')
     .then( (res) => {
       if (res && res.data && res.data.isLoggedIn) {
@@ -23,7 +23,7 @@ class App extends Component {
       } else {
         this.setState({loggedIn: false});
       }
-    });
+    })
   }
 
   setLoggedInCallback = (isLoggedIn) => {
@@ -33,11 +33,11 @@ class App extends Component {
   render() {
     const App = () => (
       <div>
-        <Header setLoggedInCallback={this.setLoggedInCallback}/>
+        <Header setLoggedInCallback={this.setLoggedInCallback} loggedIn={this.state.loggedIn}/>
         <Switch>
-          <PrivateRoute exact path='/' component={Home} {...this.state}/>
-          <LoggedOutRoute exact path='/register' {...this.state} render={(props) => (<Registration setLoggedInCallback={this.setLoggedInCallback} {...props}/>)}/>
-          <LoggedOutRoute exact path='/login' {...this.state} render={(props) => (<Login setLoggedInCallback={this.setLoggedInCallback} {...props}/>)} />
+          <PrivateRoute exact path='/' component={Home} {...this.state} />
+          <LoggedOutRoute exact path='/register' {...this.state} component={(props) => (<Registration setLoggedInCallback={this.setLoggedInCallback} {...props}/>)}/>
+          <LoggedOutRoute exact path='/login' {...this.state} component={(props) => (<Login setLoggedInCallback={this.setLoggedInCallback} {...props}/>)} />
         </Switch>
       </div>
     )
@@ -56,7 +56,7 @@ const LoggedOutRoute = ({ component: Component, loggedIn, ...rest }) => (
     } else if (loggedIn === true) {
       return (
         <Redirect to={{
-          pathname: '/',
+          pathname: '/register',
           state: { from: props.location }
         }} />
       );
@@ -64,7 +64,7 @@ const LoggedOutRoute = ({ component: Component, loggedIn, ...rest }) => (
       return "";
     }
   }} />
-)
+);
 
 const PrivateRoute = ({ component: Component, loggedIn, ...rest }) => (
   <Route {...rest} render={(props) => {
@@ -81,6 +81,6 @@ const PrivateRoute = ({ component: Component, loggedIn, ...rest }) => (
       return "";
     }
   }} />
-)
+);
 
 export default App;

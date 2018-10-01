@@ -7,18 +7,6 @@ class Header extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      loggedIn : false
-    };
-  }
-
-  componentDidMount() {
-    axios.get('/api/userInfo')
-    .then( (res) => {
-      if (res && res.data && res.data.isLoggedIn) {
-        this.setState({loggedIn: true})
-      }
-    });
   }
 
   login = () => {
@@ -38,7 +26,7 @@ class Header extends Component {
   }
 
   renderButtons = () => {
-    if (this.state.loggedIn) {
+    if (this.props.loggedIn) {
       return (
         <Button onClick={this.logout}>Logout</Button>
       );
