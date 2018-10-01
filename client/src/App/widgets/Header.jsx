@@ -42,6 +42,7 @@ class Header extends Component {
 
   render() {
     return (<div className="MainHeader align-middle">
+      <span className="logo"><img src={process.env.PUBLIC_URL+"/logo_white.png"}/></span>
       <span className="title">Exchange Tracker</span>
       {this.renderButtons()}
     </div>);

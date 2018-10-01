@@ -4,13 +4,20 @@
 	border-bottom: 3px solid white;
 	height: 60px;
 
-	font-family: proxima-nova,helvetica neue,Helvetica,Arial,sans-serif;
+	.logo img {
+		height: 40px;
+		width: 40px;
+		margin-top: -15px;
+		margin-left: 5px;
+	}
 
 	.title {
 		line-height: 60px;
-		font-size: 20px;
+		font-size: 25px;
 		margin-left: 25px;
 		color: white;
+		letter-spacing: 2px;
+		font-weight: 300;
 	}
 
 	button {
