@@ -6,5 +6,14 @@
     "host": "localhost",
     "dialect": "sqlite",
     "storage": "data.sqlite3"
+  },
+  "production": {
+  	"username": "ntcrgmqkncnffv",
+    "password": "da57f2b01fb6776390d66edd46163a64ea886c16bba5d2c412cfbeaa6521b5cc",
+    "database": "dc0qi0f8hdichb",
+    "host": "ec2-23-23-243-111.compute-1.amazonaws.com",
+    "port": 5432,
+    "dialect": "postgres",
+    "protocol": "postgres"
   }
 }
