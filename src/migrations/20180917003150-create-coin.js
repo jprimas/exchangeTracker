@@ -11,7 +11,7 @@ module.exports = {
       purseId: {
         allowNull: false,
         type: Sequelize.INTEGER,
-        references: { model: 'purses', key: 'id' }
+        references: { model: 'Purses', key: 'id' }
       },
       symbol: {
         type: Sequelize.STRING

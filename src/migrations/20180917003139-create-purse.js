@@ -11,7 +11,7 @@ module.exports = {
       loginId: {
         allowNull: false,
         type: Sequelize.INTEGER,
-        references: { model: 'logins', key: 'id' }
+        references: { model: 'Logins', key: 'id' }
       },
       totalFees: {
         type: Sequelize.FLOAT
