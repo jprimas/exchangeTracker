@@ -87,10 +87,10 @@ class Registration extends Component {
         coinbaseApiSecret: this.state.coinbaseApiSecret
       }).then( result => {
         if (!result.data || result.data.hasError) {
-          this.props.loginCallback(false);
+          this.props.setLoggedInCallback(false);
           this.setState({ error: result.data.error });
         } else {
-          this.props.loginCallback(true);
+          this.props.setLoggedInCallback(true);
           this.props.history.push('/');
         }
       });

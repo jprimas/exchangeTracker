@@ -32,7 +32,7 @@ class Header extends Component {
   logout = () => {
     axios.get('/api/logout')
     .then( (res) => {
-      this.props.loginCallback(false);
+      this.props.setLoggedInCallback(false);
       window.location =  '/login';
     });
   }

@@ -26,18 +26,18 @@ class App extends Component {
     });
   }
 
-  loginCallback = (isSuccess) => {
-    this.setState({loggedIn: isSuccess});
+  setLoggedInCallback = (isLoggedIn) => {
+    this.setState({loggedIn: isLoggedIn});
   }
 
   render() {
     const App = () => (
       <div>
-        <Header loginCallback={this.loginCallback}/>
+        <Header setLoggedInCallback={this.setLoggedInCallback}/>
         <Switch>
           <PrivateRoute exact path='/' component={Home} {...this.state}/>
-          <Route exact path='/register' render={(props) => (<Registration loginCallback={this.loginCallback} {...props}/>)}/>
-          <Route exact path='/login' render={(props) => (<Login loginCallback={this.loginCallback} {...props}/>)} />
+          <LoggedOutRoute exact path='/register' {...this.state} render={(props) => (<Registration setLoggedInCallback={this.setLoggedInCallback} {...props}/>)}/>
+          <LoggedOutRoute exact path='/login' {...this.state} render={(props) => (<Login setLoggedInCallback={this.setLoggedInCallback} {...props}/>)} />
         </Switch>
       </div>
     )
@@ -48,6 +48,23 @@ class App extends Component {
     );
   }
 }
+
+const LoggedOutRoute = ({ component: Component, loggedIn, ...rest }) => (
+  <Route {...rest} render={(props) => {
+    if (loggedIn === false) {
+      return ( <Component {...props} /> )
+    } else if (loggedIn === true) {
+      return (
+        <Redirect to={{
+          pathname: '/',
+          state: { from: props.location }
+        }} />
+      );
+    } else {
+      return "";
+    }
+  }} />
+)
 
 const PrivateRoute = ({ component: Component, loggedIn, ...rest }) => (
   <Route {...rest} render={(props) => {
@@ -61,7 +78,7 @@ const PrivateRoute = ({ component: Component, loggedIn, ...rest }) => (
         }} />
       );
     } else {
-      return "Loading...";
+      return "";
     }
   }} />
 )
