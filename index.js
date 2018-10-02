@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 require('dotenv').config(); 
 const TransactionProcessor = require('./src/helpers/TransactionProcessor');
+const TaxHelper = require('./src/utils/TaxHelper');
 const models = require('./src/models');
 const { requiresLogin } = require('./src/routes/middleware');
 const authRoutes = require('./src/routes/authRoutes');
@@ -64,7 +65,7 @@ app.get('/api/secure/calculateTaxes', [requiresLogin], (req,res) => {
 	}
 
 	let transactionProcessor = new TransactionProcessor(req.login);
-	return transactionProcessor.calculateCapitalGains(req.query.year, req.query.netIncome)
+	return transactionProcessor.calculateCapitalGains(req.login, req.query.year, req.query.netIncome)
 	.then( result => {
 		console.log(result);
 		return res.json(result) 
@@ -76,6 +77,23 @@ app.get('/api/secure/calculateTaxes', [requiresLogin], (req,res) => {
 			error: "Something went wrong"
 		});
 	});
+});
+
+app.get('/api/secure/getTaxInfo', [requiresLogin], (req,res) => {
+	if (!req.login.taxYear || !req.login.netIncome) {
+		return res.sendStatus(200);
+	}
+
+	let result = {
+		year: req.login.taxYear,
+		netIncome: req.login.netIncome,
+		shortTermCapitalGains: req.login.shortTermCapitalGains,
+		longTermCapitalGains: req.login.longTermCapitalGains,
+		shortTermCapitalLosses: req.login.shortTermCapitalLosses,
+		longTermCapitalLosses: req.login.longTermCapitalLosses,
+	};
+	result.estimatedTaxes = TaxHelper.estimateTaxes(req.login.taxYear, result)
+	return res.json(result);
 });
 
 // Handles any requests that don't match the ones above

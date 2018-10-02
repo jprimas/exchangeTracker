@@ -1,4 +1,3 @@
-'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('Logins', {
@@ -12,9 +11,6 @@ module.exports = {
         type: Sequelize.STRING
       },
       password: {
-        type: Sequelize.STRING
-      },
-      salt: {
         type: Sequelize.STRING
       },
       binanceApiKey: {
@@ -37,6 +33,24 @@ module.exports = {
       },
       coinbaseApiSecret: {
         type: Sequelize.STRING
+      },
+      taxYear: {
+        type: Sequelize.INTEGER
+      },
+      netIncome: {
+        type: Sequelize.FLOAT
+      },
+      shortTermCapitalGains: {
+        type: Sequelize.FLOAT
+      },
+      longTermCapitalGains: {
+        type: Sequelize.FLOAT
+      },
+      shortTermCapitalLosses: {
+        type: Sequelize.FLOAT
+      },
+      longTermCapitalLosses: {
+        type: Sequelize.FLOAT
       },
       createdAt: {
         allowNull: false,

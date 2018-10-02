@@ -11,6 +11,8 @@ class TaxBox extends Component {
     this.state = {
       year: "",
       estimatedNetIncome: "",
+      setYear: "",
+      setEstimatedNetIncome: "",
       taxCalculated: false,
       taxCalculating: false,
       taxError: null,
@@ -20,6 +22,26 @@ class TaxBox extends Component {
       shortTermCapitalLosses: 0,
       estimatedTaxes: 0
     }
+  }
+
+  componentDidMount() {
+    axios.get('/api/secure/getTaxInfo')
+    .then(res => {
+      if (!res || !res.data || !res.data.year) {
+        return;
+      } else {
+        this.setState({
+          setYear: res.data.year,
+          setEstimatedNetIncome: res.data.netIncome,
+          longTermCapitalGains: res.data.longTermCapitalGains,
+          shortTermCapitalGains: res.data.shortTermCapitalGains,
+          longTermCapitalLosses: res.data.longTermCapitalLosses,
+          shortTermCapitalLosses: res.data.shortTermCapitalLosses,
+          estimatedTaxes: res.data.estimatedTaxes,
+          taxCalculated: true,
+        });
+      }
+    });
   }
 
   _calculateTaxes = () => {
@@ -43,7 +65,9 @@ class TaxBox extends Component {
           shortTermCapitalGains: result.data.shortTermCapitalGains,
           longTermCapitalLosses: result.data.longTermCapitalLosses,
           shortTermCapitalLosses: result.data.shortTermCapitalLosses,
-          estimatedTaxes: result.data.estimatedTaxes
+          estimatedTaxes: result.data.estimatedTaxes,
+          setYear: this.state.year,
+          setEstimatedNetIncome: this.state.estimatedNetIncome
         });
       }
     });
@@ -120,7 +144,7 @@ class TaxBox extends Component {
 
             <div className={"resultSection" + (this.state.taxCalculated ? "" : " hidden")}>
               <h4>Tax Information</h4>
-              <div className="description">{"Estimated taxes for " + this.state.year + " given the net income of " + this.state.estimatedNetIncome} </div>
+              <div className="description">{"Estimated taxes for " + this.state.setYear + " given the net income of $" + this.state.setEstimatedNetIncome} </div>
               <div>
                 <span className="item">Short Term Capital Gains</span><span className="value">{"$" + this.state.shortTermCapitalGains}</span>
               </div>

@@ -1,6 +1,7 @@
 const Promise = require('bluebird');
 const CryptoCompareApi = require('./CryptoCompareApi');
-var {CommonUtil, TransactionTypes} = require('../utils/CommonUtil');
+const {CommonUtil, TransactionTypes} = require('../utils/CommonUtil');
+const models = require('../models');
 
 const USD_SYMBOL = 'USD';
 const ETH_SYMBOL = 'ETH';
@@ -102,7 +103,7 @@ class CoinStore {
 
 TaxHelper = {
 
-	calculateCapitalGains(trxs, year, netIncome) {
+	calculateCapitalGains(trxs, login, year, netIncome) {
 		let coinStore = new CoinStore(year);
 		let promises = [];
 		for(let i = 0; i < trxs.length; i++) {
@@ -120,49 +121,65 @@ TaxHelper = {
 		}
 		return Promise.all(promises).then( () => {
 			let capitalGainsInfo = coinStore.getCapitalGains();
-			let totalAdjustment = MAX_TAX_ADJUSTMENT;
-			let totalShortTermAdjustment = capitalGainsInfo.shortTermCapitalGains;
-			let totalLongTermAdjustment = capitalGainsInfo.longTermCapitalGains;
-
-			// Attempt to reduce short term capital gain using short term capital losses
-			let shortTermCapitalGainsAdjustment = Math.min(
-				totalAdjustment,
-				totalShortTermAdjustment,
-				capitalGainsInfo.shortTermCapitalLosses);
-			totalAdjustment -= shortTermCapitalGainsAdjustment;
-			totalShortTermAdjustment -= shortTermCapitalGainsAdjustment;
-
-			// Attempt to reduce long term capital gain using long term capital losses
-			let longTermCapitalGainsAdjustment = Math.min(
-				totalAdjustment,
-				totalLongTermAdjustment, 
-				capitalGainsInfo.longTermCapitalLosses);
-			totalAdjustment -= longTermCapitalGainsAdjustment;
-			totalLongTermAdjustment -= longTermCapitalGainsAdjustment;
-			
-			// Attempt to reduce short term capital gain using long term capital losses
-			let longToShortCarryOverAdjustment = Math.min(totalAdjustment,
-				totalShortTermAdjustment,
-				Math.max(0, capitalGainsInfo.longTermCapitalLosses - longTermCapitalGainsAdjustment));
-			totalAdjustment -= longToShortCarryOverAdjustment;
-			
-			// Attempt to reduce long term capital gain using short term capital losses
-			let shortToLongCarryOverAdjustment = Math.min(
-				totalAdjustment,
-				totalLongTermAdjustment,
-				Math.max(0, capitalGainsInfo.shortTermCapitalLosses - shortTermCapitalGainsAdjustment));
-			shortTermCapitalGainsAdjustment += longToShortCarryOverAdjustment;
-			longTermCapitalGainsAdjustment += shortToLongCarryOverAdjustment;
-
-			let adjustedShortTermCapitalGains = capitalGainsInfo.shortTermCapitalGains - shortTermCapitalGainsAdjustment;
-			let adjustedLongTermCapitalGains = capitalGainsInfo.longTermCapitalGains - longTermCapitalGainsAdjustment;
-
-			let estimatedTaxes = adjustedShortTermCapitalGains * this._getShortTermTaxRate(netIncome) +
-				adjustedLongTermCapitalGains * this._getLongTermTaxRate(netIncome)
-			capitalGainsInfo.estimatedTaxes = CommonUtil.formatWithTwoDecimals(estimatedTaxes);
+			capitalGainsInfo.estimatedTaxes = this.estimateTaxes(netIncome, capitalGainsInfo)
+			this._persistTaxInformation(login, year, netIncome, capitalGainsInfo);
 
 			return capitalGainsInfo;
 		});
+	},
+
+	estimateTaxes(netIncome, capitalGainsInfo) {
+		let totalAdjustment = MAX_TAX_ADJUSTMENT;
+		let totalShortTermAdjustment = capitalGainsInfo.shortTermCapitalGains;
+		let totalLongTermAdjustment = capitalGainsInfo.longTermCapitalGains;
+
+		// Attempt to reduce short term capital gain using short term capital losses
+		let shortTermCapitalGainsAdjustment = Math.min(
+			totalAdjustment,
+			totalShortTermAdjustment,
+			capitalGainsInfo.shortTermCapitalLosses);
+		totalAdjustment -= shortTermCapitalGainsAdjustment;
+		totalShortTermAdjustment -= shortTermCapitalGainsAdjustment;
+
+		// Attempt to reduce long term capital gain using long term capital losses
+		let longTermCapitalGainsAdjustment = Math.min(
+			totalAdjustment,
+			totalLongTermAdjustment, 
+			capitalGainsInfo.longTermCapitalLosses);
+		totalAdjustment -= longTermCapitalGainsAdjustment;
+		totalLongTermAdjustment -= longTermCapitalGainsAdjustment;
+		
+		// Attempt to reduce short term capital gain using long term capital losses
+		let longToShortCarryOverAdjustment = Math.min(totalAdjustment,
+			totalShortTermAdjustment,
+			Math.max(0, capitalGainsInfo.longTermCapitalLosses - longTermCapitalGainsAdjustment));
+		totalAdjustment -= longToShortCarryOverAdjustment;
+		
+		// Attempt to reduce long term capital gain using short term capital losses
+		let shortToLongCarryOverAdjustment = Math.min(
+			totalAdjustment,
+			totalLongTermAdjustment,
+			Math.max(0, capitalGainsInfo.shortTermCapitalLosses - shortTermCapitalGainsAdjustment));
+		shortTermCapitalGainsAdjustment += longToShortCarryOverAdjustment;
+		longTermCapitalGainsAdjustment += shortToLongCarryOverAdjustment;
+
+		let adjustedShortTermCapitalGains = capitalGainsInfo.shortTermCapitalGains - shortTermCapitalGainsAdjustment;
+		let adjustedLongTermCapitalGains = capitalGainsInfo.longTermCapitalGains - longTermCapitalGainsAdjustment;
+
+		let estimatedTaxes = adjustedShortTermCapitalGains * this._getShortTermTaxRate(netIncome) +
+			adjustedLongTermCapitalGains * this._getLongTermTaxRate(netIncome);
+		return CommonUtil.formatWithTwoDecimals(estimatedTaxes);
+	},
+
+	_persistTaxInformation(login, year, netIncome, capitalGainsInfo) {
+		login.taxYear = year;
+		login.netIncome = netIncome;
+		login.shortTermCapitalGains = capitalGainsInfo.shortTermCapitalGains;
+		login.longTermCapitalGains = capitalGainsInfo.longTermCapitalGains;
+		login.shortTermCapitalLosses = capitalGainsInfo.shortTermCapitalLosses;
+		login.longTermCapitalLosses = capitalGainsInfo.longTermCapitalLosses;
+
+		return login.save();
 	},
 
 	_getShortTermTaxRate(income) {

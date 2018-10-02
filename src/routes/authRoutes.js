@@ -84,7 +84,7 @@ router.post('/api/register', [jsonParser], (req, res) => {
 	return models.Login.findOne({
 		where: Sequelize.where(
 			Sequelize.fn('lower', Sequelize.col('email')),
-			Sequelize.fn('lower', userEmail))
+			Sequelize.fn('lower', req.body.email))
 	})
 	.then( login => {
 		if (login) {

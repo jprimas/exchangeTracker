@@ -90,7 +90,6 @@ class Registration extends Component {
           this.props.setLoggedInCallback(false);
           this.setState({ error: result.data.error });
         } else {
-          this.props.setLoggedInCallback(true);
           this.props.history.push('/');
         }
       });
