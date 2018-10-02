@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {});
   Coin.associate = function(models) {
     // associations can be defined here
-    models.Coin.belongsTo(models.Purse);
+    models.Coin.belongsTo(models.Purse, {foreignKey: 'purseId'});
   };
 
   //Instance Methods

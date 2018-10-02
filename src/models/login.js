@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {});
   Login.associate = function(models) {
     // associations can be defined here
-    models.Login.hasOne(models.Purse);
+    models.Login.hasOne(models.Purse, {foreignKey: 'loginId'});
   };
   return Login;
 };

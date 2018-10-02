@@ -9,8 +9,8 @@ module.exports = (sequelize, DataTypes) => {
   }, {});
   Purse.associate = function(models) {
     // associations can be defined here
-    models.Purse.belongsTo(models.Login);
-    models.Purse.hasMany(models.Coin);
+    models.Purse.belongsTo(models.Login, {foreignKey: 'loginId'});
+    models.Purse.hasMany(models.Coin, {foreignKey: 'purseId'});
   };
 
 
