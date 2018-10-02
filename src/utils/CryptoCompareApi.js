@@ -53,12 +53,14 @@ CryptoCompareApi = {
 					setTimeout(() => {
 						resolve(this.getHistoricalPrice(fromSymbol, toSymbol, timestamp, count+1));
 					}, 1000);
-				}).then( (historicalPrice) => historicalPrice);
+				})
+				.then( (historicalPrice) => historicalPrice);
 				
 			} else {
 				return response.data
 			}
-		}).catch( () => {
+		})
+		.catch( () => {
 			return this.getHistoricalPrice(fromSymbol, toSymbol, timestamp, count+1);
 		})
 	},
@@ -83,7 +85,8 @@ CryptoCompareApi = {
 		if (symbol == 'USD') {
 			return Promise.resolve(amount);
 		}
-		return this.getHistoricalPriceInUsd(symbol, timestamp).then( historicalPrice => {
+		return this.getHistoricalPriceInUsd(symbol, timestamp)
+		.then( historicalPrice => {
 			return historicalPrice * amount;
 		});
 	}

@@ -7,7 +7,7 @@ require('dotenv').config();
 const TransactionProcessor = require('./src/helpers/TransactionProcessor');
 const models = require('./src/models');
 const { requiresLogin } = require('./src/routes/middleware');
-const authRoutes = require('./src/routes/authRoutes'); 
+const authRoutes = require('./src/routes/authRoutes');
 
 const app = express();
 // Serve the static files from the React app

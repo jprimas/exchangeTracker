@@ -34,10 +34,12 @@ class PurseHelper {
 			this.purse.totalUsdInvested += trade.amount * trade.price;
 		} else if (trade.fromSymbol === ETH_SYMBOL) {
 			this._getCoin(ETH_SYMBOL).amount -= trade.amount * trade.price;
-			promiseArr.push(CryptoCompareApi.getHistoricalPriceOfEthInUsd(trade.timestamp).then( historicalPriceOfEthInUsd => {
-				this._getCoin(trade.toSymbol).totalPurchasePrice += trade.amount * trade.price * historicalPriceOfEthInUsd;
-				return;
-			}));
+			promiseArr.push(CryptoCompareApi.getHistoricalPriceOfEthInUsd(trade.timestamp)
+				.then( historicalPriceOfEthInUsd => {
+					this._getCoin(trade.toSymbol).totalPurchasePrice += trade.amount * trade.price * historicalPriceOfEthInUsd;
+					return;
+				})
+			);
 		} else {
 			promiseArr.push(Promise.reject("Unhandled trade between two alt coins."));
 		}
@@ -70,7 +72,10 @@ class PurseHelper {
 	_handleCommission(trx) {
 		if (trx.commissionAmount > 0) {
 			this._addCoin(trx.comissionAsset, -trx.commissionAmount);
-			return CryptoCompareApi.convertAssetValueToUsd(trx.comissionAsset, trx.commissionAmount, trx.timestamp)
+			return CryptoCompareApi.convertAssetValueToUsd(
+				trx.comissionAsset,
+				trx.commissionAmount,
+				trx.timestamp)
 			.then( assetValueInUsd => {
 				this.purse.totalFees += assetValueInUsd;
 			})
@@ -113,7 +118,8 @@ class PurseHelper {
 				coin.currentValueInUsd = CommonUtil.formatWithTwoDecimals(currentValueInUsd);
 				coins[symbol] = coin;
 			});
-		}).then( () => {
+		})
+		.then( () => {
 			coins = CommonUtil.orderJsonObjectAlphabetically(coins);
 			return [coins, totalCurrentValue];
 		});

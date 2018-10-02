@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router();
 const bodyParser = require('body-parser');
 const bcrypt = Promise.promisifyAll(require('bcrypt'));
+const Sequelize = require('sequelize');
 const models = require('../models');
 const { requiresLogin } = require('./middleware');
 
@@ -21,8 +22,11 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false });
 	let userEmail = req.body.email;
 	let userPassword = req.body.password;
 	return models.Login.findOne({
-	    where: {email: userEmail}
-	}).then( login => {
+		where: Sequelize.where(
+			Sequelize.fn('lower', Sequelize.col('email')),
+			Sequelize.fn('lower', userEmail))
+	})
+	.then( login => {
 		// Check if we have a login for the email
 		if (!login) {
 			return res.json({
@@ -68,7 +72,7 @@ router.post('/api/register', [jsonParser], (req, res) => {
 		});
 	}
 
-	//User entered a valid password
+	// User entered a valid password
 	if (!req.body.password || !req.body.confirmPassword || req.body.password != req.body.confirmPassword ) {
 		return res.json({
 			hasError: true,
@@ -77,7 +81,11 @@ router.post('/api/register', [jsonParser], (req, res) => {
 	}
 
 	// Check if the email already exists
-	return models.Login.findOne({ where: {email: req.body.email} })
+	return models.Login.findOne({
+		where: Sequelize.where(
+			Sequelize.fn('lower', Sequelize.col('email')),
+			Sequelize.fn('lower', userEmail))
+	})
 	.then( login => {
 		if (login) {
 			return res.json({
@@ -103,7 +111,8 @@ router.post('/api/register', [jsonParser], (req, res) => {
 			.then( (login) => {
 				req.session.loginId = login.id;
 				return res.sendStatus(200);
-			}).catch( () => {
+			})
+			.catch( () => {
 				return res.json({
 					hasError: true,
 					error: "Unable to save to DB"

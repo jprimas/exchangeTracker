@@ -1,7 +1,7 @@
 {
-  "name": "websiteTemplate",
+  "name": "exchangeTracker",
   "version": "1.0.0",
-  "description": "",
+  "description": "Connects to various crypto exchanges and performs analysis",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -9,7 +9,7 @@
     "heroku-postbuild": "cd client && npm install && npm run build"
   },
   "keywords": [],
-  "author": "",
+  "author": "Joshua Primas",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.18.0",
@@ -23,7 +23,6 @@
     "gdax": "^0.8.0",
     "mysql2": "^1.6.1",
     "node-binance-api": "^0.8.1",
-    "pg": "^7.4.3",
     "sequelize": "^4.38.1",
     "sqlite3": "^4.0.2"
   }

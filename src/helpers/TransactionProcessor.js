@@ -62,7 +62,8 @@ class TransactionProcessor {
 		return models.Purse.findOne({
 		    where: {loginId: this.login.id},
 		    include: [models.Coin]
-		}).then( purse => {
+		})
+		.then( purse => {
 			if (!purse) {
 				return models.Purse.build({
 					loginId: this.login.id,
