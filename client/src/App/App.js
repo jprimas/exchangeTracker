@@ -36,8 +36,8 @@ class App extends Component {
         <Header setLoggedInCallback={this.setLoggedInCallback} loggedIn={this.state.loggedIn}/>
         <Switch>
           <PrivateRoute exact path='/' component={Home} {...this.state} />
-          <LoggedOutRoute exact path='/register' {...this.state} component={(props) => (<Registration setLoggedInCallback={this.setLoggedInCallback} {...props}/>)}/>
-          <LoggedOutRoute exact path='/login' {...this.state} component={(props) => (<Login setLoggedInCallback={this.setLoggedInCallback} {...props}/>)} />
+          <LoggedOutRoute exact path='/register' {...this.state} component={Registration} setLoggedInCallback={this.setLoggedInCallback}/>
+          <LoggedOutRoute exact path='/login' {...this.state} component={Login} setLoggedInCallback={this.setLoggedInCallback}/>
         </Switch>
       </div>
     )
@@ -49,14 +49,14 @@ class App extends Component {
   }
 }
 
-const LoggedOutRoute = ({ component: Component, loggedIn, ...rest }) => (
+const LoggedOutRoute = ({ component: Component, loggedIn, setLoggedInCallback, ...rest }) => (
   <Route {...rest} render={(props) => {
     if (loggedIn === false) {
-      return ( <Component {...props} /> )
+      return ( <Component {...props} setLoggedInCallback={setLoggedInCallback}/> )
     } else if (loggedIn === true) {
       return (
         <Redirect to={{
-          pathname: '/register',
+          pathname: '/',
           state: { from: props.location }
         }} />
       );
