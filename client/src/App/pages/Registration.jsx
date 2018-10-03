@@ -362,16 +362,16 @@ class Registration extends Component {
   render() {
     return (
       <div className="Login">
-          <div className="loginBox">
-            <h1> Register </h1>
-            <div className="subtext">
-              {this._renderSubtext()}
-            </div>
-            <div className="error">
-              {this.state.error}
-            </div>
-            {this._renderRegistrationPage()}
+        <h2> Sign Up </h2>
+        <div className="loginBox">
+          <div className="subtext">
+            {this._renderSubtext()}
           </div>
+          <div className="error">
+            {this.state.error}
+          </div>
+          {this._renderRegistrationPage()}
+        </div>
       </div>
     );
   }

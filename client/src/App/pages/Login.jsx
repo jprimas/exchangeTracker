@@ -49,8 +49,8 @@ class Login extends Component {
   render() {
     return (
       <div className="Login">
+          <h2> Login </h2>
           <div className="loginBox">
-            <h1> Login </h1>
             <div className="error">
               {this.state.error}
             </div>

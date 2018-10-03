@@ -31,11 +31,15 @@ class Home extends Component {
     <div className="Home">
       <div className="colContainer">
         <div className="col leftCol">
+          <h3>Investment Summary</h3>
           <InvestmentSummary purse={this.state.purse}/>
+          <h3>Coin Breakdown</h3>
           <CoinsSummary purse={this.state.purse}/>
+          <h3>Taxes</h3>
           <TaxBox/>
         </div>
         <div className="col rightCol">
+          <h3>Transaction History</h3>
           <Transactions/>
         </div>
       </div>

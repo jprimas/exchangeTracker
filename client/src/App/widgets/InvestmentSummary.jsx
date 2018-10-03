@@ -8,7 +8,6 @@ class InvestmentSummary extends Component {
 
     return (
       <div className="box summaryBox">
-        <h3>Investment Summary</h3>
         { purse && !purse.hasError ? (
             <div>
               <ul className="keys">

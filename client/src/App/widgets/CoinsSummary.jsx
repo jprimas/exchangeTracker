@@ -9,7 +9,6 @@ class CoinsSummary extends Component {
 
     return (
       <div className="box coinSummaryBox">
-        <h3>Coin Breakdown</h3>
         { purse && !purse.hasError && Object.keys(purse.coins).length ? (
             <div className="coins">
               <div className="header lineItem">

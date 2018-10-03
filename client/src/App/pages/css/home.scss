@@ -1,6 +1,8 @@
 .Home {
+	overflow: auto;
+
 	.colContainer {
-		padding-top: 50px;
+		padding-top: 25px;
 		width: 1000px;
 		margin: 0px auto;
 
@@ -9,9 +11,17 @@
 			width: 460px;
 
 			.box {
+				overflow: auto;
 				background: white;
 				border-radius: 5px;
-				min-height: 150px;
+				min-height: 100px;
+				padding-top: 20px;
+				padding-bottom: 20px;
+    			box-shadow: 0px 1px 50px -4px rgba(0,0,0,.28);
+
+    			&.transactionsBox {
+					padding-bottom: 10px;
+				}
 
 				.loadingText {
 					text-align: center;
@@ -29,7 +39,7 @@
 			text-align: center;
 			padding-top: 10px;
 			padding-bottom: 5px;
-			border-bottom: 1px solid #0667d0;
+			color: white;
 		}
 
 		.loss {
@@ -39,9 +49,5 @@
 		.gain {
 			color: green;
 		}
-	}
-
-	.transactionsBox {
-		padding-bottom: 10px;
 	}
 }

@@ -108,7 +108,6 @@ class TaxBox extends Component {
   render = () => {
     return (
       <div className="box taxBox">
-        <h3>Taxes</h3>
           <div className="taxes">
             <Form inline onSubmit={this._handleCalculateTaxesClick}>
               <FormGroup controlId="yearInput">

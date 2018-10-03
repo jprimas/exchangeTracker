@@ -46,7 +46,6 @@ class Transactions extends Component {
     }
     return (
       <div className="box transactionsBox">
-        <h3>Transaction History</h3>
         { (this.state.dataFetched) ? (
             <div className="transactionList">{transactionList}</div>
           ) : (
