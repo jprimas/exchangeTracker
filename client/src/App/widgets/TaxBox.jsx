@@ -38,7 +38,7 @@ class TaxBox extends Component {
           longTermCapitalLosses: res.data.longTermCapitalLosses,
           shortTermCapitalLosses: res.data.shortTermCapitalLosses,
           estimatedTaxes: res.data.estimatedTaxes,
-          taxCalculated: true,
+          taxCalculated: true
         });
       }
     });

@@ -36,10 +36,7 @@ class Home extends Component {
           <TaxBox/>
         </div>
         <div className="col rightCol">
-          <div className="box transactionsBox">
-            <h3>Transaction History</h3>
-            <Transactions/>
-          </div>
+          <Transactions/>
         </div>
       </div>
     </div>
