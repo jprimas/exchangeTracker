@@ -3,7 +3,7 @@ const Promise = require('bluebird');
 const bcrypt = Promise.promisifyAll(require('bcrypt'));
 const models = require('../models');
 
-const TEST_USER_ID = 3;
+const TEST_USER_ID = 1;
 
 let requiresLogin = function (req, res, next) {
 	if (process.env.SKIP_AUTH === 'true' && !req.session.loginId) {
