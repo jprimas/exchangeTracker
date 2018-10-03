@@ -11,7 +11,8 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      loggedIn: null
+      loggedIn: null,
+      fromCallback: false
     };
   }
 
@@ -27,17 +28,27 @@ class App extends Component {
   }
 
   setLoggedInCallback = (isLoggedIn) => {
-    this.setState({loggedIn: isLoggedIn});
+    if (isLoggedIn != this.state.loggedIn) {
+      this.setState({
+        loggedIn: isLoggedIn,
+        fromCallback: true
+      });
+    }
+  }
+
+  shouldComponentUpdate(nextProps, nextState){
+    let preventRerender = this.state.loggedIn != nextState.loggedIn && nextState.fromCallback
+    return !preventRerender;
   }
 
   render() {
     const App = () => (
       <div>
-        <Header setLoggedInCallback={this.setLoggedInCallback} loggedIn={this.state.loggedIn}/>
+        <Header loggedIn={this.state.loggedIn}/>
         <Switch>
           <PrivateRoute exact path='/' component={Home} {...this.state} />
-          <LoggedOutRoute exact path='/register' {...this.state} component={Registration} setLoggedInCallback={this.setLoggedInCallback}/>
-          <LoggedOutRoute exact path='/login' {...this.state} component={Login} setLoggedInCallback={this.setLoggedInCallback}/>
+          <LoggedOutRoute exact path='/register' {...this.state} component={(props) => (<Registration setLoggedInCallback={this.setLoggedInCallback.bind(this)} {...props}/>)}/>
+          <LoggedOutRoute exact path='/login' {...this.state} component={(props) => (<Login setLoggedInCallback={this.setLoggedInCallback.bind(this)} {...props}/>)}/>
         </Switch>
       </div>
     )
@@ -49,10 +60,10 @@ class App extends Component {
   }
 }
 
-const LoggedOutRoute = ({ component: Component, loggedIn, setLoggedInCallback, ...rest }) => (
+const LoggedOutRoute = ({ component: Component, loggedIn, ...rest }) => (
   <Route {...rest} render={(props) => {
     if (loggedIn === false) {
-      return ( <Component {...props} setLoggedInCallback={setLoggedInCallback}/> )
+      return ( <Component {...props}/> )
     } else if (loggedIn === true) {
       return (
         <Redirect to={{
