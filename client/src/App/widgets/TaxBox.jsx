@@ -28,7 +28,10 @@ class TaxBox extends Component {
     axios.get('/api/secure/getTaxInfo')
     .then(res => {
       if (!res || !res.data || !res.data.year) {
-        return;
+        this.setState({
+          taxCalculated: false,
+          taxError: res.data ? res.data.error : "Failed to load previous tax calculations"
+        });
       } else {
         this.setState({
           setYear: res.data.year,
