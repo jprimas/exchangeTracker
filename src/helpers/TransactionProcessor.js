@@ -3,8 +3,8 @@ const BinanceHandler = require('../binance/BinanceHandler');
 const GdaxHandler = require('../coinbase/GdaxHandler')
 const CoinbaseHandler = require('../coinbase/CoinbaseHandler')
 const {CommonUtil, TransactionTypes} = require('../utils/CommonUtil');
-const PurseHelper = require('../utils/PurseHelper');
-const TaxHelper = require('../utils/TaxHelper');
+const PurseHelper = require('./PurseHelper');
+const TaxHelper = require('./TaxHelper');
 const models = require('../models');
 
 
@@ -91,15 +91,17 @@ class TransactionProcessor {
 				});
 				return trxs;
 			}
-		);
+		)
 	}
 
 	getAllTransactionsDecoupled() {
 		return this._getAllTransactions().then( (trxs) => {
+			console.log(trxs);
 			let decoupledTrxs = [];
 			let previousTrx = null;
 			for (let i = 0; i < trxs.length; i++) {
 				let trx = trxs[i];
+				console.log(trx);
 				if (previousTrx &&
 					previousTrx.orderId &&
 					trx.orderId &&

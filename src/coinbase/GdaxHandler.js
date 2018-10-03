@@ -14,11 +14,11 @@ class GdaxHandler {
 			login.gdaxApiSecret,
 			login.gdaxApiPassphrase,
 			GDAX_API_URL
-		);
+		)
 	}
 
 	_getDepositsAndWithdrawls() {
-		// TODO - does this differ from coinbase is any scenarios???
+		// TODO - does this differ from coinbase in any scenarios???
 		return [];
 		// return this.gdax.getAccounts().then( (accounts) => {
 		// 	let transactions = [];
@@ -28,7 +28,6 @@ class GdaxHandler {
 		// 				for (let i = 0; i < trxs.length; i++) {
 		// 					let trx = trxs[i];
 		// 					//console.log(trx);
-
 		// 					if (trx.type === 'transfer' && trx.details.transfer_type === 'deposit') {
 		// 						transactions.push({
 		// 							type: TransactionTypes.DEPOSIT,
@@ -52,10 +51,10 @@ class GdaxHandler {
 		// 	});
 		// });
 	}
-
-	_getTrades() {
+	//eth use
+	_getTrades(baseSymbol, quoteSymbol) {
 		let transactions = [];
-		return this.gdax.getFills({product_id: 'ETH-USD'}).then( (trades) => {
+		return this.gdax.getFills({product_id: baseSymbol + '-' + quoteSymbol}).then( (trades) => {
 			for (let i = 0; i < trades.length; i++) {
 				let trade = trades[i];
 				//console.log(trade);
@@ -65,24 +64,24 @@ class GdaxHandler {
 						orderId: trade.order_id,
 						type: TransactionTypes.TRADE,
 						timestamp: new Date(trade.created_at),
-						fromSymbol: 'USD',
-						toSymbol: 'ETH',
+						fromSymbol: quoteSymbol,
+						toSymbol: baseSymbol,
 						amount: parseFloat(trade.size),
 						price: parseFloat(trade.price),
 						commissionAmount: parseFloat(trade.fee),
-						comissionAsset: 'USD'
+						comissionAsset: quoteSymbol
 					})
 				} else if (trade.side === 'sell' && trade.settled) {
 					transactions.push({
 						orderId: trade.order_id,
 						type: TransactionTypes.TRADE,
 						timestamp: new Date(trade.created_at),
-						fromSymbol: 'ETH',
-						toSymbol: 'USD',
+						fromSymbol: baseSymbol,
+						toSymbol: quoteSymbol,
 						amount: parseFloat(trade.size),
 						price: parseFloat(trade.price),
 						commissionAmount: parseFloat(trade.fee),
-						comissionAsset: 'USD'
+						comissionAsset: quoteSymbol
 					})
 				}
 			}
@@ -93,13 +92,16 @@ class GdaxHandler {
 
 	getGdaxTransactions() {
 		return Promise.join(
-			this._getDepositsAndWithdrawls(),
-			this._getTrades(),
-			(depositsAndWithdrawls, trades) => {
-				//console.log(depositsAndWithdrawls);
-				return depositsAndWithdrawls.concat(trades);
+			this._getTrades("ETH", "USD"),
+			this._getTrades("ETH", "BTC"),
+			this._getTrades("BTC", "USD"),
+			(ethUsdTrades, ethBtcTrades, btcUsdTrades) => {
+				return ethUsdTrades.concat(ethBtcTrades).concat(btcUsdTrades);
 			}
-		);
+		)
+		.catch( () => {
+			return [];
+		});
 	}
 }
 

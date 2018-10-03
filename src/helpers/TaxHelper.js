@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const CryptoCompareApi = require('./CryptoCompareApi');
+const CryptoCompareApi = require('../utils/CryptoCompareApi');
 const {CommonUtil, TransactionTypes} = require('../utils/CommonUtil');
 const models = require('../models');
 

@@ -41,20 +41,6 @@ class BinanceHandler {
 		return this.binance.tradesAsync(symbol+"ETH");
 	}
 
-	/**
-	 * Given a coin symbol, queries for the current price of that coin
-	 * Currently assumes that the coins were bought with ETH 
-	 */
-	getCurrentValueOfCoin(symbol) {
-		return this.binance.pricesAsync(symbol+"ETH").then( (data) => {
-			let price = parseFloat(data[symbol+"ETH"]);
-			if (isNaN(price)) {
-				throw "Binance returned invalid price for " + symbol;
-			}
-			return price;
-		});
-	}
-
 	getDepositHistoryOfCoin(symbol) {
 		return Promise.fromCallback((cb) => {
 			this.binance.depositHistory(cb, symbol);
@@ -65,7 +51,7 @@ class BinanceHandler {
 		return this.getDepositHistoryOfCoin("ETH");
 	}
 
-	getEthDebositAddress() {
+	getEthDepositAddress() {
 		return this.binance.depositAddressAsync("ETH");
 	}
 
@@ -105,12 +91,10 @@ class BinanceHandler {
 	}
 
 	getBinanceTransactions() {
-		return this.getActiveSymbols().then( activeSymbols => {
+		return this.getActiveSymbols()
+		.then( activeSymbols => {
 			if (!activeSymbols || activeSymbols.length <= 0) {
-				return {
-					hasError: true,
-					error: "Account has no active coins"
-				};
+				return [];
 			}
 
 			let transactions = [];
@@ -119,7 +103,11 @@ class BinanceHandler {
 				.then( coinTrxs => {
 					transactions = transactions.concat(coinTrxs);
 				});
-			}).then( () => transactions );
+			})
+			.then( () => transactions );
+		})
+		.catch( () => {
+			return [];
 		});
 	}
 

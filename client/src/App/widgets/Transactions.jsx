@@ -20,7 +20,7 @@ class Transactions extends Component {
   getTransactions = () => {
     axios.get('/api/secure/getTransactions')
     .then(res => {
-      if (!res || !res.data) {
+      if (!res || !res.data || res.data.hasError) {
         this.setState({
           transactions: [],
           error: res.data ? res.data.error : null,

@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 require('dotenv').config(); 
 const TransactionProcessor = require('./src/helpers/TransactionProcessor');
-const TaxHelper = require('./src/utils/TaxHelper');
+const TaxHelper = require('./src/helpers/TaxHelper');
 const models = require('./src/models');
 const { requiresLogin } = require('./src/routes/middleware');
 const authRoutes = require('./src/routes/authRoutes');

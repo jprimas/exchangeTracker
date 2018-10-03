@@ -50,11 +50,11 @@ class CoinbaseHandler {
 		}).then( () => transactions );
 	}
 
-	_getTrades(acct) {
+	_getTrades(acct, symbol) {
 		return this._getIsExternalPaymentMethodMap().then( (isExternalPaymentMethodMap) => {
 			return Promise.join(
-				this._getBuys(acct, isExternalPaymentMethodMap),
-				this._getSells(acct, isExternalPaymentMethodMap),
+				this._getBuys(acct, symbol, isExternalPaymentMethodMap),
+				this._getSells(acct, symbol, isExternalPaymentMethodMap),
 				(buys, sells) => {
 					return buys.concat(sells);
 				}
@@ -62,7 +62,7 @@ class CoinbaseHandler {
 		});
 	}
 
-	_getBuys(acct, isExternalPaymentMethodMap) {
+	_getBuys(acct, symbol, isExternalPaymentMethodMap) {
 		let transactions = [];
 		return Promise.fromCallback((cb) => {
 			acct.getBuys(null, cb);
@@ -77,14 +77,16 @@ class CoinbaseHandler {
 						type: TransactionTypes.TRADE,
 						timestamp: new Date(trx.created_at),
 						fromSymbol: 'USD',
-						toSymbol: 'ETH',
+						toSymbol: symbol,
 						amount: parseFloat(trx.amount.amount),
 						price: parseFloat(trx.subtotal.amount) / parseFloat(trx.amount.amount),
 						commissionAmount: parseFloat(coinbaseFee.amount.amount),
 						comissionAsset: coinbaseFee.amount.currency
 					})
 					// If this is directly coming from an external bank also create a deposit trx
-					if (trx.payment_method && trx.payment_method.id && isExternalPaymentMethodMap[trx.payment_method.id]) {
+					if (trx.payment_method &&
+						trx.payment_method.id &&
+						(isExternalPaymentMethodMap[trx.payment_method.id] == true || isExternalPaymentMethodMap[trx.payment_method.id] == null)) {
 						let bankFee = trx.fees.filter(fee => fee.type === 'bank')[0];
 						transactions.push({
 							type: TransactionTypes.DEPOSIT,
@@ -101,7 +103,7 @@ class CoinbaseHandler {
 		}).then( () => transactions );
 	}
 
-	_getSells(acct, isExternalPaymentMethodMap) {
+	_getSells(acct, symbol, isExternalPaymentMethodMap) {
 		let transactions = [];
 		return Promise.fromCallback((cb) => {
 			acct.getSells(null, cb);
@@ -115,7 +117,7 @@ class CoinbaseHandler {
 						orderId: trx.transaction.id,
 						type: TransactionTypes.TRADE,
 						timestamp: new Date(trx.created_at),
-						fromSymbol: 'ETH',
+						fromSymbol: symbol,
 						toSymbol: 'USD',
 						amount: parseFloat(trx.amount.amount),
 						price: parseFloat(trx.subtotal.amount) / parseFloat(trx.amount.amount),
@@ -148,13 +150,21 @@ class CoinbaseHandler {
 						transactions = transactions.concat(trxs);
 					});
 				} else if (acct.currency === 'ETH') {
-					return this._getTrades(acct).then( trxs => {
+					return this._getTrades(acct, "ETH").then( trxs => {
+						transactions = transactions.concat(trxs);
+					});
+				} else if (acct.currency === 'BTC') {
+					return this._getTrades(acct, "BTC").then( trxs => {
 						transactions = transactions.concat(trxs);
 					});
 				}
-			}).then( () => {
+			})
+			.then( () => {
 				return transactions;
 			});
+		})
+		.catch( () => {
+			return [];
 		});
 	}
 }
