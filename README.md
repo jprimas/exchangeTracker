@@ -30,3 +30,11 @@ This project is centered around performing analysis over multiple crypto exchang
 
 #### Demo of the homepage:
 ![Homepage](https://github.com/jprimas/exchangeTracker/blob/master/readme/homepage.png)
+
+#### To Do List
+1. Create a User Edit page to allow updating of API keys
+2. Hook into Coinbase OAuth
+3. Make UI mobile responsive
+4. Hook into Bitterex
+5. Hook into Gemini
+6. Allow the ability to reset passwords
