@@ -1,9 +1,9 @@
 # Exchange Tracker
 
-#### [This project is currently live!](https://the-exchange-tracker.herokuapp.com)
+#### [This project is currently live!](http://www.myexchangetracker.com)
 ## Overview
 The goal of this project was to create a website that summarizes a users current crypto investments. By hooking into various crypto exchanges it performs an anlysis of all the user's deposits, withdrawals, and trades to provide a concise picture of the user's current investments.
-Currently, the website provides four summaries
+Currently, the website provides four summaries:
 #### 1. Investment Summary
 This section provides a summary of the users entire holdings across all coins. It highlights how much total USD the user has currently invested, how much the user has gained or lost overtime, and how much the user have paid in fees. 
 #### 2. Coin Breakdown
