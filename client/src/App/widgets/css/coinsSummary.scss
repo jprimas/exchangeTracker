@@ -5,7 +5,7 @@
 	}
 
 	.lineItem {
-		margin-left: 45px;
+		margin-left: 10px;
 	}
 
 	.header span {
@@ -22,7 +22,7 @@
 		}
 
 		hr {
-			width: 285px;
+			width: 375px;
 			margin-top: 0px;
 			margin-bottom: 5px;
 			margin-left: 25px;
@@ -36,10 +36,14 @@
 	}
 
 	.amount {
-		width: 160px;
+		width: 110px;
 	}
 
 	.percentGain {
-		widh: 160px;
+		width: 145px;
+	}
+
+	.currentPrice {
+		width: 110px;
 	}
 }

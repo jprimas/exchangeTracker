@@ -96,12 +96,12 @@ class TransactionProcessor {
 
 	getAllTransactionsDecoupled() {
 		return this._getAllTransactions().then( (trxs) => {
-			console.log(trxs);
+			//console.log(trxs);
 			let decoupledTrxs = [];
 			let previousTrx = null;
 			for (let i = 0; i < trxs.length; i++) {
 				let trx = trxs[i];
-				console.log(trx);
+				//console.log(trx);
 				if (previousTrx &&
 					previousTrx.orderId &&
 					trx.orderId &&

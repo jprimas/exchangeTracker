@@ -15,6 +15,7 @@ class CoinsSummary extends Component {
                 <span className="symbol">Symbol</span>
                 <span className="amount">Coin Count</span>
                 <span className="percentGain">Percentage Gain</span>
+                <span className="currentPrice">Current Price</span>
               </div>
               {Object.keys(purse.coins).map((key) => {
                 if (key === 'USD') return;

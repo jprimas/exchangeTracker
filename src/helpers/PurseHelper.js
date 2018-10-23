@@ -116,6 +116,7 @@ class PurseHelper {
 				totalCurrentValue += currentPrice * this.coinsMap[symbol].amount;
 				coin.percentageGainInUsd = CommonUtil.formatAsPercentage(currentValueInUsd / this.coinsMap[symbol].totalPurchasePrice);
 				coin.currentValueInUsd = CommonUtil.formatWithTwoDecimals(currentValueInUsd);
+				coin.currentPrice = CommonUtil.formatWithTwoDecimals(currentPrice);
 				coins[symbol] = coin;
 			});
 		})

@@ -44,7 +44,6 @@ app.get('/api/secure/getTransactions', [requiresLogin], (req,res) => {
 	let transactionProcessor = new TransactionProcessor(req.login);
 	return transactionProcessor.getAllTransactionsDecoupled()
 	.then( result => {
-		//console.log(result);
 		return res.json(result) 
 	})
 	.catch( error => {
@@ -67,7 +66,6 @@ app.get('/api/secure/calculateTaxes', [requiresLogin], (req,res) => {
 	let transactionProcessor = new TransactionProcessor(req.login);
 	return transactionProcessor.calculateCapitalGains(req.login, req.query.year, req.query.netIncome)
 	.then( result => {
-		console.log(result);
 		return res.json(result) 
 	})
 	.catch( error => {
@@ -103,5 +101,3 @@ app.get('*', (req,res) =>{
 
 const port = process.env.PORT || 5000;
 app.listen(port);
-
-console.log('App is listening on port ' + port);
